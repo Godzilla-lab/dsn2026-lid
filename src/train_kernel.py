@@ -10,7 +10,7 @@ Outputs in /kaggle/working: metrics.json, oof_<fold>.npz (cv), model/ and bench 
 """
 CONFIG = {"mode": "cv", "folds": ["A", "B", "C"], "folds_file": "folds_v1.csv", "n_layers": 4,
           "steps": 4000, "batch": 32, "crop_min_s": 3.0, "crop_max_s": 6.0, "lr_body": 5e-5, "lr_head": 5e-4,
-          "loss": "ce", "tau": 0.0, "group_alpha": 0.5, "aug": False, "seed": 0}
+          "loss": "ce", "tau": 0.0, "group_alpha": 0.5, "aug": False, "ext_cap": 0.5, "seed": 0}
 
 import glob
 import io
@@ -109,6 +109,12 @@ def sampling_weights(idx):
     for lab, dl in d.groupby("label"):
         src_w = dl.groupby("source").n.sum() ** 0.5
         src_w = src_w / src_w.sum()
+        # External sources together get at most ext_cap of a class, so clean studio corpora
+        # (e.g. the 2-speaker Efik set) cannot become the class's dominant "sound".
+        ext = src_w.index.str.startswith("ext_")
+        if ext.any() and (~ext).any() and src_w[ext].sum() > CONFIG["ext_cap"]:
+            src_w[ext] *= CONFIG["ext_cap"] / src_w[ext].sum()
+            src_w[~ext] *= (1 - CONFIG["ext_cap"]) / src_w[~ext].sum()
         for src, ds in dl.groupby("source"):
             gsize = ds.groupby("sgroup").size()
             gw = gsize ** CONFIG["group_alpha"]
