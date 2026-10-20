@@ -18,7 +18,7 @@ _Updated automatically as runs finish. Times are UTC; Nigeria time (WAT) = UTC+1
 
 ## Upload next
 
-Nothing ready yet. The first submission (D1) comes from rung 1.
+**D1 is ready.** Upload `submissions/D1/submission.zip`. Its Hugging Face repo is already public, so step 1 below is done.
 
 **How to upload a ready submission**
 1. On Hugging Face, open the model repo listed below, go to **Settings → Change repo visibility → Public**. Or message Claude "submit D1" and it will do this for you.
@@ -31,14 +31,14 @@ Nothing ready yet. The first submission (D1) comes from rung 1.
 
 | Name | HF repo (private until upload) | Rung | Question it tests | Local CV final | Ready? | Uploaded? |
 |---|---|---|---|---|---|---|
-| D1 | [godzilla1215/dsn2026-lid-d1](https://huggingface.co/godzilla1215/dsn2026-lid-d1) | 1 | Does local CV match the leaderboard? What latency and memory do the organisers measure? | – | no | no |
+| D1 | [godzilla1215/dsn2026-lid-d1](https://huggingface.co/godzilla1215/dsn2026-lid-d1) @ `a9cbed5f` | 1 | Does local CV match the leaderboard? What latency and memory do the organisers measure? | CV running | **yes** (checker PASS, public) | no |
 
 ## Ladder
 
 | Rung | Change | Status | Result |
 |---|---|---|---|
-| 0 | Smoke test: train, save, checker, offline load, latency, speaker embeddings | running (Kaggle, Adewumi) | – |
-| 1 | AfriHuBERT 4 layers, provided data, speaker-balanced sampling, 3–6 s crops | queued | – |
+| 0 | Smoke test | cancelled: Kaggle's mounted disk was too slow for its many small reads; checks moved into rung 1 | – |
+| 1 | AfriHuBERT 4 layers, provided data, speaker- and source-balanced sampling, 3–6 s crops | full model done (13 min train); CV queued after speaker embeddings | 37.9M params, 0.076 GB fp16, checker PASS, 38 ms/clip on a Kaggle T4 |
 | 2 | Logit-adjusted loss + per-class bias tuning | queued | – |
 | 3 | Shortcut removal + phone/noise/reverb augmentation | queued | – |
 | 4 | External data marked USE in the report | queued | – |
