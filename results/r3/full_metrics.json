@@ -1,0 +1,56 @@
+{
+ "config": {
+  "mode": "full",
+  "folds": [
+   "A",
+   "B",
+   "C"
+  ],
+  "folds_file": "folds_v0.csv",
+  "n_layers": 4,
+  "steps": 8000,
+  "batch": 32,
+  "crop_min_s": 3.0,
+  "crop_max_s": 6.0,
+  "lr_body": 5e-05,
+  "lr_head": 0.0005,
+  "loss": "ce",
+  "tau": 0.0,
+  "group_alpha": 0.5,
+  "aug": true,
+  "seed": 0
+ },
+ "torch": "2.11.0+cu128",
+ "gpu": "Tesla T4",
+ "copy_s": 35.6,
+ "n_shards": 11,
+ "n_clips": 29089,
+ "audio_hours": 92.42,
+ "decode_s": 122.6,
+ "full_train_s": 1719.4,
+ "model_files": [
+  "config.json",
+  "model.safetensors",
+  "preprocessor_config.json"
+ ],
+ "checker": [
+  "37.9M parameters, 0.076 GB, dtypes ['F16']",
+  "PASS: the folder meets the file, size, parameter and label rules"
+ ],
+ "checker_ok": true,
+ "bench": {
+  "loaded_dtype": "torch.float32",
+  "latency_s": 0.0401,
+  "gpu_peak_gb": 1.332,
+  "ram_peak_gb": 2.28,
+  "params_m": 37.87,
+  "repo_gb": 0.0758,
+  "efficiency": 0.665,
+  "eff_parts": {
+   "size": 0.921,
+   "memory": 0.43,
+   "speed": 0.645
+  }
+ },
+ "done": true
+}

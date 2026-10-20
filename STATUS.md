@@ -18,7 +18,9 @@ _Updated automatically as runs finish. Times are UTC; Nigeria time (WAT) = UTC+1
 
 ## Upload next
 
-D1 uploaded: final **0.3421** (F1 0.374, efficiency 0.830). Noisy accuracy is only 0.21 and Idoma is acting as a garbage class, so rung 3 (augmentation) is now training as D2. See `results/d1/leaderboard.md`.
+**D2 is ready: upload `submissions/D2/submission.zip`.** Its repo is already public, and an anonymous download passes the organisers' checker. D2 = D1 plus augmentation and 2× training (rung 3). It tests whether noisy/phone accuracy rises and the Idoma dump goes away.
+
+D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboard.md`.
 
 **How to upload a ready submission**
 1. On Hugging Face, open the model repo listed below, go to **Settings → Change repo visibility → Public**. Or message Claude "submit D1" and it will do this for you.
@@ -32,6 +34,7 @@ D1 uploaded: final **0.3421** (F1 0.374, efficiency 0.830). Noisy accuracy is on
 | Name | HF repo (private until upload) | Rung | Question it tests | Local CV final | Ready? | Uploaded? |
 |---|---|---|---|---|---|---|
 | D1 | [godzilla1215/dsn2026-lid-d1](https://huggingface.co/godzilla1215/dsn2026-lid-d1) @ `a9cbed5f` | 1 | Does local CV match the leaderboard? What latency and memory do the organisers measure? | – | yes | **yes: 0.3421** |
+| D2 | [godzilla1215/dsn2026-lid-d2](https://huggingface.co/godzilla1215/dsn2026-lid-d2) @ `3e073891` | 3 | Does augmentation fix noisy/phone accuracy and the Idoma dump? | – | **yes** (public, checker PASS) | no |
 
 ## Ladder
 
@@ -40,7 +43,8 @@ D1 uploaded: final **0.3421** (F1 0.374, efficiency 0.830). Noisy accuracy is on
 | 0 | Smoke test | cancelled: Kaggle's mounted disk was too slow for its many small reads; checks moved into rung 1 | – |
 | 1 | AfriHuBERT 4 layers, provided data, speaker- and source-balanced sampling, 3–6 s crops | full model done (13 min train); CV queued after speaker embeddings | 37.9M params, 0.076 GB fp16, checker PASS, 38 ms/clip on a Kaggle T4 |
 | 2 | Logit-adjusted loss + per-class bias tuning | queued | – |
-| 3 | Shortcut removal + phone/noise/reverb augmentation, 8,000 steps | **training next (D2)**, moved ahead of rung 2 because of D1's noisy accuracy | – |
+| 3 | Shortcut removal + phone/noise/reverb augmentation, 8,000 steps | **done: D2** (29 min train) | checker PASS; upload to see the noisy/phone effect |
+| 3+4+6 | **Go-for-#1 stack**: 12 layers + augmentation + external data (USE sources, capped at half of a class) | training now (D3) | – |
 | 4 | External data marked USE in the report | queued | – |
 | 5 | Voice conversion / MMS-LID teacher | queued | – |
 | 6 | Depth 6 → 8 layers | queued | – |

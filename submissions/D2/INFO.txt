@@ -1,0 +1,3 @@
+repo: https://huggingface.co/godzilla1215/dsn2026-lid-d2
+revision: 3e07389119142f68d8ff2c930ab4564be093aee4
+rung: 3
