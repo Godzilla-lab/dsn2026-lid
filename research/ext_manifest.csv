@@ -1,0 +1,24 @@
+dataset_id,config_split,revision,license,label,source,clips,hours,speakers,url,notes
+offiongbassey/efik_speech_dataset,default/train,f7e84a96ee778fad6e0ac01dcddfffe93b199fe0,CC-BY-4.0,efi,ext_efik,4797,8.356,2,https://huggingface.co/datasets/offiongbassey/efik_speech_dataset,all clips 2-30 s; sibling efik_audio_dataset NOT used
+google/fleurs,ar_eg/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,other,ext_fleurs,265,0.762,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,en_us/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,other,ext_fleurs,263,0.758,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,es_419/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,other,ext_fleurs,242,0.754,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,ff_sn/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,other,ext_fleurs,191,0.768,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,fr_fr/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,other,ext_fleurs,239,0.764,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,ha_ng/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,hau,ext_fleurs,609,2.547,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,ig_ng/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,ibo,ext_fleurs,578,2.589,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,lg_ug/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,other,ext_fleurs,160,0.774,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,ln_cd/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,other,ext_fleurs,156,0.765,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,pt_br/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,other,ext_fleurs,208,0.73,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,sw_ke/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,other,ext_fleurs,181,0.741,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,wo_sn/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,other,ext_fleurs,180,0.723,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+google/fleurs,yo_ng/train,70bb2e84b976b7e960aa89f1c648e09c59f894dd,CC-BY-4.0,yor,ext_fleurs,594,2.545,,https://huggingface.co/datasets/google/fleurs,no speaker ids in source
+McGill-NLP/NaijaS2ST,default/dev+train language=english,4fef5310ef98b8c703e490ea9908100f152ad5b3,CC-BY-4.0,other,ext_naijas2st,735,2.021,16,https://huggingface.co/datasets/McGill-NLP/NaijaS2ST,"language=english, user_id prefix EN/EY/EB (Nigerian English accents) only; 4 shards read"
+McGill-NLP/NaijaS2ST,default/train language=pidgin,4fef5310ef98b8c703e490ea9908100f152ad5b3,CC-BY-4.0,other,ext_naijas2st,576,2.024,16,https://huggingface.co/datasets/McGill-NLP/NaijaS2ST,language=pidgin only; 3 shards read
+asr-nigerian-pidgin/nigerian-pidgin-1.0,default/train,87c615091844ac1b44b91d8831683641b02df447,CC-BY-4.0,other,ext_pidgin,966,2.003,10,https://huggingface.co/datasets/asr-nigerian-pidgin/nigerian-pidgin-1.0,train split; speaker = LIG-Aikuma speaker code in filename; speaker round-robin
+google/WaxalNLP,aka_asr/train,5f4d8ca24f2b9d168b2ee545f1febaaff4b40580,CC-BY-4.0 (University of Ghana),other,ext_waxal,92,0.505,92,https://huggingface.co/datasets/google/WaxalNLP,speaker round-robin
+google/WaxalNLP,bau_tts/train,5f4d8ca24f2b9d168b2ee545f1febaaff4b40580,CC-BY-4.0 (University of Ghana),other,ext_waxal,103,0.501,4,https://huggingface.co/datasets/google/WaxalNLP,"human voice-talent studio recordings (not synthetic); long takes cut <=25 s, <=240 s per take"
+google/WaxalNLP,dag_asr/train,5f4d8ca24f2b9d168b2ee545f1febaaff4b40580,CC-BY-4.0 (University of Ghana),other,ext_waxal,93,0.504,93,https://huggingface.co/datasets/google/WaxalNLP,speaker round-robin
+google/WaxalNLP,ewe_asr/train,5f4d8ca24f2b9d168b2ee545f1febaaff4b40580,CC-BY-4.0 (University of Ghana),other,ext_waxal,93,0.504,93,https://huggingface.co/datasets/google/WaxalNLP,speaker round-robin
+google/WaxalNLP,ful_asr/train,5f4d8ca24f2b9d168b2ee545f1febaaff4b40580,CC-BY-SA-4.0 (Digital Umuganda),other,ext_waxal,96,0.501,94,https://huggingface.co/datasets/google/WaxalNLP,speaker round-robin
+google/WaxalNLP,pcm_tts/train,5f4d8ca24f2b9d168b2ee545f1febaaff4b40580,CC-BY-SA-4.0 (Media Trust),other,ext_waxal,246,1.002,8,https://huggingface.co/datasets/google/WaxalNLP,human voice-talent studio recordings (not synthetic)
