@@ -1,0 +1,83 @@
+     ââââââââââââââââââââââââââââââââââââââââ 44.0/44.0 kB 2.1 MB/s eta 0:00:00
+   ââââââââââââââââââââââââââââââââââââââââ 12.0/12.0 MB 99.4 MB/s eta 0:00:00
+   ââââââââââââââââââââââââââââââââââââââââ 566.4/566.4 kB 27.5 MB/s eta 0:00:00
+   ââââââââââââââââââââââââââââââââââââââââ 3.3/3.3 MB 78.4 MB/s eta 0:00:00
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+gradio 6.26.0 requires huggingface-hub<2.0,>=1.16.0, but you have huggingface-hub 0.36.2 which is incompatible.
+diffusers 0.40.0 requires huggingface-hub<2.0,>=1.23.0, but you have huggingface-hub 0.36.2 which is incompatible.
+{"copy_s": 129.6, "n_shards": 21}
+{"n_clips": 44823, "audio_hours": 154.86, "decode_s": 273.9}
+Some weights of HubertForSequenceClassification were not initialized from the model checkpoint at ajesujoba/AfriHuBERT and are newly initialized: ['classifier.bias', 'classifier.weight', 'layer_weights', 'projector.bias', 'projector.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+/kaggle/src/script.py:270: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler()
+step 250/12000 loss 2.405 100s
+step 500/12000 loss 1.373 197s
+step 750/12000 loss 1.408 295s
+step 1000/12000 loss 1.004 396s
+step 1250/12000 loss 0.933 495s
+step 1500/12000 loss 0.672 595s
+step 1750/12000 loss 0.415 693s
+step 2000/12000 loss 0.805 792s
+step 2250/12000 loss 0.627 889s
+step 2500/12000 loss 0.560 987s
+step 2750/12000 loss 0.550 1085s
+step 3000/12000 loss 0.222 1183s
+step 3250/12000 loss 0.406 1285s
+step 3500/12000 loss 0.901 1386s
+step 3750/12000 loss 0.267 1485s
+step 4000/12000 loss 0.567 1582s
+step 4250/12000 loss 0.236 1679s
+step 4500/12000 loss 0.390 1775s
+step 4750/12000 loss 0.582 1873s
+step 5000/12000 loss 0.306 1968s
+step 5250/12000 loss 0.333 2066s
+step 5500/12000 loss 0.680 2163s
+step 5750/12000 loss 0.664 2261s
+step 6000/12000 loss 0.263 2358s
+step 6250/12000 loss 0.065 2455s
+step 6500/12000 loss 0.349 2555s
+step 6750/12000 loss 0.568 2653s
+step 7000/12000 loss 0.113 2751s
+step 7250/12000 loss 0.095 2844s
+step 7500/12000 loss 0.337 2942s
+step 7750/12000 loss 0.348 3041s
+step 8000/12000 loss 0.142 3138s
+{"fold_A_step_8000": {"clean": {"weighted_f1": 0.545, "acc": 0.687}, "noisy": {"weighted_f1": 0.5012, "acc": 0.6285}, "phone": {"weighted_f1": 0.5584, "acc": 0.6956}, "n_eval": 1626, "eval_s": 336.3}}
+step 8250/12000 loss 0.458 3569s
+step 8500/12000 loss 0.142 3667s
+step 8750/12000 loss 0.095 3766s
+step 9000/12000 loss 0.345 3865s
+step 9250/12000 loss 0.083 3961s
+step 9500/12000 loss 0.060 4060s
+step 9750/12000 loss 0.199 4159s
+step 10000/12000 loss 0.179 4258s
+step 10250/12000 loss 0.025 4353s
+step 10500/12000 loss 0.319 4455s
+step 10750/12000 loss 0.154 4554s
+step 11000/12000 loss 0.116 4653s
+step 11250/12000 loss 0.435 4748s
+step 11500/12000 loss 0.185 4844s
+step 11750/12000 loss 0.222 4942s
+step 12000/12000 loss 0.229 5040s
+{"fold_A_step_12000": {"clean": {"weighted_f1": 0.5396, "acc": 0.6839}, "noisy": {"weighted_f1": 0.5014, "acc": 0.6415}, "phone": {"weighted_f1": 0.5554, "acc": 0.6993}, "n_eval": 1626, "eval_s": 334.4}}
+{"fold_A_train_s": 5374.3}
+Some weights of HubertForSequenceClassification were not initialized from the model checkpoint at ajesujoba/AfriHuBERT and are newly initialized: ['classifier.bias', 'classifier.weight', 'layer_weights', 'projector.bias', 'projector.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+/kaggle/src/script.py:270: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler()
+step 250/12000 loss 2.461 111s
+step 500/12000 loss 1.918 209s
+step 750/12000 loss 1.450 306s
+step 1000/12000 loss 1.071 404s
+step 1250/12000 loss 0.895 505s
+step 1500/12000 loss 0.630 602s
+step 1750/12000 loss 0.639 702s
+step 2000/12000 loss 1.186 800s
+step 2250/12000 loss 0.511 898s
+step 2500/12000 loss 0.593 994s
+step 2750/12000 loss 0.293 1091s
+step 3000/12000 loss 0.298 1188s
+step 3250/12000 loss 0.644 1287s
+step 3500/12000 loss 0.662 1385s
+step 3750/12000 loss 0.790 1483s

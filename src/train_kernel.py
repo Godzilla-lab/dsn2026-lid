@@ -133,6 +133,9 @@ from scipy.signal import butter, fftconvolve, resample_poly, sosfilt  # noqa: E4
 
 PHONE_SOS = butter(4, [300, 3400], btype="bandpass", fs=SR, output="sos")
 SPEEDS = [(10, 9), (20, 19), (20, 21), (10, 11)]  # resample ratios for speed 0.9, 0.95, 1.05, 1.1
+if CONFIG.get("speed_set") == "wide":  # 0.85-1.15: formant shifts closer to a different speaker's
+    SPEEDS += [(20, 17), (20, 23)]
+SPEED_P = CONFIG.get("speed_p", 0.5)
 
 
 def fit_length(x, n):
@@ -160,7 +163,7 @@ def colored_noise(n):
 def augment(x, babble=None):
     n = len(x)
     x = x.astype(np.float64)
-    if np.random.rand() < 0.5:  # speed perturbation (tempo and pitch together)
+    if np.random.rand() < SPEED_P:  # speed perturbation (tempo and pitch together)
         up, down = SPEEDS[np.random.randint(len(SPEEDS))]
         x = fit_length(resample_poly(x, up, down), n)
     if np.random.rand() < 0.5:  # random smooth EQ, +-6 dB over 8 bands
@@ -261,7 +264,8 @@ def train(train_idx, seed, on_eval=None):
     torch.manual_seed(seed)
     model = HubertForSequenceClassification.from_pretrained(
         BASE, num_labels=len(LABELS), id2label=dict(enumerate(LABELS)), label2id=L2I,
-        num_hidden_layers=CONFIG["n_layers"], use_weighted_layer_sum=True).to(dev)
+        num_hidden_layers=CONFIG["n_layers"], use_weighted_layer_sum=True,
+        mask_time_prob=CONFIG.get("mask_time_prob", 0.05), mask_feature_prob=CONFIG.get("mask_feature_prob", 0.0)).to(dev)
     model.freeze_feature_encoder()
     is_head = lambda n: n.startswith(("projector", "classifier", "layer_weights"))
     params = [{"params": [p for n, p in model.named_parameters() if p.requires_grad and not is_head(n)], "lr": CONFIG["lr_body"]},
