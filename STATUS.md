@@ -18,7 +18,7 @@ _Updated automatically as runs finish. Times are UTC; Nigeria time (WAT) = UTC+1
 
 ## Upload next
 
-**D2 is ready: upload `submissions/D2/submission.zip`.** Its repo is already public, and an anonymous download passes the organisers' checker. D2 = D1 plus augmentation and 2× training (rung 3). It tests whether noisy/phone accuracy rises and the Idoma dump goes away.
+**D2 was uploaded but NOT SCORED: the organisers' run timed out after processing 0 of 6,659 clips.** It is a platform problem, not our model: D2's config is identical to D1's, which ran at 0.004 s per clip. See `results/d2/leaderboard.md`. Ask the organisers to re-run #1005591. **Hold today's last slot for D3** until the queue works again (watch for any team's new result on the leaderboard).
 
 D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboard.md`.
 
@@ -34,7 +34,7 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 | Name | HF repo (private until upload) | Rung | Question it tests | Local CV final | Ready? | Uploaded? |
 |---|---|---|---|---|---|---|
 | D1 | [godzilla1215/dsn2026-lid-d1](https://huggingface.co/godzilla1215/dsn2026-lid-d1) @ `a9cbed5f` | 1 | Does local CV match the leaderboard? What latency and memory do the organisers measure? | – | yes | **yes: 0.3421** |
-| D2 | [godzilla1215/dsn2026-lid-d2](https://huggingface.co/godzilla1215/dsn2026-lid-d2) @ `3e073891` | 3 | Does augmentation fix noisy/phone accuracy and the Idoma dump? | – | **yes** (public, checker PASS) | no |
+| D2 | [godzilla1215/dsn2026-lid-d2](https://huggingface.co/godzilla1215/dsn2026-lid-d2) @ `3e073891` | 3 | Does augmentation fix noisy/phone accuracy and the Idoma dump? | – | yes | uploaded, **not scored** (platform timeout) |
 
 ## Ladder
 
