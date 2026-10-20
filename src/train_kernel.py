@@ -10,7 +10,7 @@ Outputs in /kaggle/working: metrics.json, oof_<fold>.npz (cv), model/ and bench 
 """
 CONFIG = {"mode": "cv", "folds": ["A", "B", "C"], "folds_file": "folds_v1.csv", "n_layers": 4,
           "steps": 4000, "batch": 32, "crop_min_s": 3.0, "crop_max_s": 6.0, "lr_body": 5e-5, "lr_head": 5e-4,
-          "loss": "ce", "tau": 0.0, "group_alpha": 0.5, "aug": False, "ext_cap": 0.5, "seed": 0}
+          "loss": "ce", "tau": 0.0, "group_alpha": 0.5, "aug": False, "ext_cap": 0.5, "eval_per_class": 200, "eval_at": [1.0], "seed": 0}
 
 import glob
 import io
@@ -215,6 +215,35 @@ def make_batch(task):
     return out
 
 
+# ---------- test-like conditions for local evaluation (deterministic per clip) ----------
+def degrade(x, cond, seed):
+    """'noisy': coloured noise at 0-10 dB SNR, half the time with reverb. 'phone': 300-3400 Hz,
+    8 kHz, mu-law 8-bit, low noise floor. Mirrors the leaderboard's clean/noisy/phone split."""
+    if cond == "clean":
+        return x
+    rs = np.random.get_state()
+    np.random.seed(seed)
+    y = x.astype(np.float64)
+    n = len(y)
+    if cond == "noisy":
+        if np.random.rand() < 0.5:
+            rt60 = np.random.uniform(0.3, 0.9)
+            t = np.arange(int(rt60 * SR)) / SR
+            rir = np.random.randn(len(t)) * np.exp(-6.9 * t / rt60)
+            rir[0] = 1.0
+            y = fftconvolve(y, rir / np.sqrt(np.sum(rir ** 2)))[:n]
+        noise = colored_noise(n)
+        y = y + noise * rms(y) / rms(noise) / 10 ** (np.random.uniform(0, 10) / 20)
+    else:
+        y = sosfilt(PHONE_SOS, y)
+        y = resample_poly(resample_poly(y, 1, 2), 2, 1)[:n]
+        peak = np.max(np.abs(y)) + 1e-9
+        mu = np.round(np.sign(y / peak) * np.log1p(255 * np.abs(y / peak)) / np.log(256) * 127) / 127
+        y = peak * np.sign(mu) * ((256 ** np.abs(mu)) - 1) / 255 + np.random.randn(n) * 10 ** (-60 / 20)
+    np.random.set_state(rs)
+    return y.astype(np.float32)
+
+
 # ---------- model ----------
 from transformers import AutoFeatureExtractor, HubertForSequenceClassification  # noqa: E402
 
@@ -225,7 +254,7 @@ def inputs(waves):
     return fe(waves, sampling_rate=SR, return_tensors="pt", padding=True).input_values.to(dev)
 
 
-def train(train_idx, seed):
+def train(train_idx, seed, on_eval=None):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -245,6 +274,7 @@ def train(train_idx, seed):
     # Logit adjustment: add tau * log(prior of the sampled batch distribution) during training.
     prior = np.bincount(Y[draws], minlength=len(LABELS)) / len(draws)
     log_prior = torch.tensor(np.log(np.maximum(prior, 1e-8)), dtype=torch.float32, device=dev)
+    eval_steps = {max(1, int(round(f * CONFIG["steps"]))) for f in CONFIG["eval_at"]}
     model.train()
     t0 = time.time()
     tasks = []
@@ -270,6 +300,9 @@ def train(train_idx, seed):
         sched.step()
         if (step + 1) % 250 == 0:
             print(f"step {step + 1}/{CONFIG['steps']} loss {loss.item():.3f} {time.time() - t0:.0f}s", flush=True)
+        if on_eval and (step + 1) in eval_steps:
+            on_eval(model, step + 1)
+            model.train()
     if pool:
         pool.close()
     return model, round(time.time() - t0, 1)
@@ -285,16 +318,38 @@ def full_clip_logits(model, idx):
     return out
 
 
+@torch.no_grad()
+def condition_logits(model, idx):
+    model.eval()
+    out = {c: np.zeros((len(idx), len(LABELS)), dtype=np.float32) for c in ("clean", "noisy", "phone")}
+    for j, k in enumerate(idx):
+        x = wave(k)
+        for ci, c in enumerate(out):
+            with torch.autocast("cuda", dtype=torch.float16):
+                out[c][j] = model(inputs([degrade(x, c, 7919 * int(k) + ci)])).logits.float().cpu().numpy()[0]
+    return out
+
+
 if CONFIG["mode"] == "cv":
+    rng = np.random.default_rng(CONFIG["seed"])
     for f in CONFIG["folds"]:
         tr = np.where(folds.fold.values != f)[0]
-        ho = np.where(folds.fold.values == f)[0]
-        model, train_s = train(tr, CONFIG["seed"])
-        lg = full_clip_logits(model, ho)
-        np.savez_compressed(f"{OUT}/oof_{f}.npz", ids=folds.id.values[ho], logits=lg)
-        wf1, f1 = weighted_f1(folds.label.values[ho].tolist(), [LABELS[i] for i in lg.argmax(1)])
-        log(**{f"fold_{f}": {"train_s": train_s, "n_holdout": len(ho), "weighted_f1": round(wf1, 4),
-                             "f1": {k: (None if v is None else round(v, 3)) for k, v in f1.items()}}})
+        ho_all = np.where(folds.fold.values == f)[0]
+        # evaluation subset: up to eval_per_class held-out clips per class (competition clips only)
+        ho = np.concatenate([rng.permutation(ho_all[Y[ho_all] == c])[:CONFIG["eval_per_class"]] for c in range(len(LABELS))]).astype(int)
+
+        def on_eval(model, step, f=f, ho=ho):
+            t1 = time.time()
+            lg = condition_logits(model, ho)
+            np.savez_compressed(f"{OUT}/oof_{f}_s{step}.npz", ids=folds.id.values[ho], **lg)
+            res = {}
+            for c, l in lg.items():
+                wf1, _ = weighted_f1(folds.label.values[ho].tolist(), [LABELS[i] for i in l.argmax(1)])
+                res[c] = {"weighted_f1": round(wf1, 4), "acc": round(float((l.argmax(1) == Y[ho]).mean()), 4)}
+            log(**{f"fold_{f}_step_{step}": {**res, "n_eval": len(ho), "eval_s": round(time.time() - t1, 1)}})
+
+        model, train_s = train(tr, CONFIG["seed"], on_eval=on_eval)
+        log(**{f"fold_{f}_train_s": train_s})
         del model
         torch.cuda.empty_cache()
 else:
