@@ -16,6 +16,15 @@ _Updated automatically as runs finish. Times are UTC; Nigeria time (WAT) = UTC+1
 | Wed ~16:00 | Final model (best recipe + voice notes) ready |
 | Wed by 17:30 | Upload the final model. Leave 30 min of margin before 18:00 |
 
+## How we choose a model
+
+The organisers' principle: *"We are building systems that work optimally… accurate across all languages (including the low-resourced ones) and also small, fast and efficient enough to run in production."*
+
+So a model is chosen by its **predicted final score** (accuracy × efficiency) from the local leaderboard (`src/predict_lb.py`), never by accuracy alone:
+- **Depth (4/6/8/12 layers):** we keep extra layers only if the accuracy they add beats the efficiency they cost.
+- **Low-resource languages first:** Efik, Ibibio, Igala and Nupe each count 8.7%, twice Yoruba, Igbo or Hausa.
+- **Measured efficiency so far:** speed is already perfect (D1: 0.004 s per clip). Memory is the weak part, at 1.72 GB, which is typical for HuBERT models. Size is fine: 38M parameters, 0.076 GB.
+
 ## Upload next
 
 **D2 was uploaded but NOT SCORED: the organisers' run timed out after processing 0 of 6,659 clips.** It is a platform problem, not our model: D2's config is identical to D1's, which ran at 0.004 s per clip. See `results/d2/leaderboard.md`. Ask the organisers to re-run #1005591. **Hold today's last slot for D3** until the queue works again (watch for any team's new result on the leaderboard).
