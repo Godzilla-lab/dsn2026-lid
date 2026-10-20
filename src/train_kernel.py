@@ -65,9 +65,20 @@ def decode_shard(path):
 
 t0 = time.time()
 folds = pd.read_csv(f"{INPUT}/{CONFIG['folds_file']}")
+# Kaggle's mounted input can be very slow for pyarrow's many small reads, so copy the shards
+# to local disk with large sequential reads first.
+import shutil  # noqa: E402
+from concurrent.futures import ThreadPoolExecutor  # noqa: E402
+
+LOCAL = "/tmp/shards"
+os.makedirs(LOCAL, exist_ok=True)
+shard_paths = sorted(glob.glob(f"{INPUT}/**/*.parquet", recursive=True))
+with ThreadPoolExecutor(6) as ex:
+    local_paths = list(ex.map(lambda p: shutil.copyfile(p, f"{LOCAL}/{os.path.basename(p)}"), shard_paths))
+log(copy_s=round(time.time() - t0, 1), n_shards=len(local_paths))
 SHARDS, where = [], {}  # one int16 array per shard; id -> (shard, start, length)
 with Pool(4) as pool:
-    for ids, starts, lengths, audio in pool.imap(decode_shard, sorted(glob.glob(f"{INPUT}/*.parquet"))):
+    for ids, starts, lengths, audio in pool.imap(decode_shard, local_paths):
         for i, s, n in zip(ids, starts, lengths):
             where[i] = (len(SHARDS), int(s), int(n))
         SHARDS.append(audio)
