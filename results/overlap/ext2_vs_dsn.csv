@@ -1,0 +1,10 @@
+new_speaker,label,clips,best_ref,best_ref_label,best_ref_source,similarity,flagged
+wm_c99145544d,efi,8,spk02,anw,omnilingual_asr,0.975,False
+wm_c4200d401c,anw,8,SPK-040,efi,hypa_voices,0.961,False
+wm_e5b0cc8bfd,ibb,6,spk03,anw,omnilingual_asr,0.96,False
+wm_3135995f0b,ibb,7,SPK-060,anw,hypa_voices,0.958,False
+wm_a8d368b318,ibb,8,spk03,anw,omnilingual_asr,0.958,False
+wm_d8e4fee4ca,ibb,8,SPK-140,efi,hypa_voices,0.953,False
+wm_a3fe1de0fb,anw,8,spk24,anw,omnilingual_asr,0.939,False
+wm_585c5fd375,ibb,8,SPK-040,efi,hypa_voices,0.935,False
+wm_e664032009,efi,8,SPK-140,efi,hypa_voices,0.73,False
