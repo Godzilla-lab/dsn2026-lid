@@ -1,0 +1,47 @@
+# Audio and datasets: never commit (licences forbid re-hosting, and files are huge)
+*.wav
+*.flac
+*.mp3
+*.ogg
+*.opus
+*.m4a
+*.aac
+*.amr
+*.webm
+*.parquet
+*.arrow
+data/
+datasets/
+cache/
+
+# Volunteer voice notes and personal details: private, never commit
+voice_notes/
+consent_records/
+*_metadata_filled.csv
+
+# Model weights: they go to a private Hugging Face repo, not here
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+*.onnx
+checkpoints/
+outputs/
+runs/
+wandb/
+
+# Secrets: never commit
+.env
+.env.*
+kaggle.json
+*.token
+secrets*
+*credentials*
+
+# Python and notebooks
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
