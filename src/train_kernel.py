@@ -314,8 +314,8 @@ def run():
 run()
 lat = statistics.median(run() for _ in range(3))
 print("BENCH " + json.dumps({"loaded_dtype": str(m.dtype), "latency_s": round(lat, 5),
-      "gpu_peak_gb": round(torch.cuda.max_memory_allocated() / 1e9, 3),
-      "ram_peak_gb": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1e6, 3),
+      "gpu_peak_gb": round(torch.cuda.max_memory_reserved() / 1e9, 3),
+      "ram_peak_gb": round(int([l for l in open("/proc/self/status") if l.startswith("VmHWM")][0].split()[1]) / 1e6, 3),
       "params_m": round(sum(p.numel() for p in m.parameters()) / 1e6, 2)}))
 '''
     with open(f"{OUT}/bench.py", "w") as f:
