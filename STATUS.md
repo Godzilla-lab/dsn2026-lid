@@ -44,7 +44,7 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 |---|---|---|---|---|---|---|
 | D1 | [godzilla1215/dsn2026-lid-d1](https://huggingface.co/godzilla1215/dsn2026-lid-d1) @ `a9cbed5f` | 1 | Does local CV match the leaderboard? What latency and memory do the organisers measure? | – | yes | **yes: 0.3421** |
 | D2 | [godzilla1215/dsn2026-lid-d2](https://huggingface.co/godzilla1215/dsn2026-lid-d2) @ `3e073891` | 3 | Does augmentation fix noisy/phone accuracy and the Idoma dump? | – | yes | uploaded, **not scored** (platform timeout) |
-| D3 | [godzilla1215/dsn2026-lid-d3](https://huggingface.co/godzilla1215/dsn2026-lid-d3) @ `41db455c` (private) | 3+4+6 | 12 layers + augmentation + 33 h external data | waiting for the local leaderboard | packaged, **held** until its predicted score beats D1 | no |
+| D3 | [godzilla1215/dsn2026-lid-d3](https://huggingface.co/godzilla1215/dsn2026-lid-d3) @ `41db455c` | 3+4+6 | 12 layers + augmentation + 33 h external data. Real check of the new recipe; uses today's last slot | CV fold A (with VoiceAfrica): held-out F1 0.54 clean / 0.52 noisy / 0.57 phone (D1 recipe: 0.40 / 0.17 / 0.12) | **yes** (public, checker PASS) | sent to team lead |
 
 ## Ladder
 
