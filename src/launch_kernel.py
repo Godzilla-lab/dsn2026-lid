@@ -13,6 +13,7 @@ import tempfile
 from pathlib import Path
 
 user, slug, overrides = sys.argv[1], sys.argv[2], json.loads(sys.argv[3])
+datasets = overrides.pop("datasets", ["dsn2026-lid-data", "dsn2026-lid-meta"])
 src = (Path(__file__).parent / "train_kernel.py").read_text()
 m = re.search(r"^CONFIG = (\{.*?\})\n", src, re.S | re.M)
 config = eval(m.group(1))  # the literal dict at the top of our own script
@@ -24,7 +25,7 @@ with tempfile.TemporaryDirectory() as d:
     (Path(d) / "kernel-metadata.json").write_text(json.dumps({
         "id": f"{user}/{slug}", "title": slug, "code_file": "train_kernel.py", "language": "python",
         "kernel_type": "script", "is_private": True, "enable_gpu": True, "enable_internet": True,
-        "dataset_sources": [f"{user}/dsn2026-lid-data"], "competition_sources": [], "kernel_sources": []}))
+        "dataset_sources": [f"{user}/{d}" for d in datasets], "competition_sources": [], "kernel_sources": []}))
     kaggle = str(Path(sys.executable).parent / "kaggle")
     r = subprocess.run([kaggle, "kernels", "push", "-p", d, "--accelerator", "NvidiaTeslaT4"], capture_output=True, text=True)
     print(r.stdout.strip() or r.stderr.strip())
