@@ -61,6 +61,8 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 | Calibration | CV of D1's recipe with clean/noisy/phone held-out scoring + eval-only VoiceAfrica | **done** | predicted 0.307 vs real 0.342: slightly cautious, good for ranking (`results/calibration/`) |
 | D3-recipe CV | 12 layers + aug + ext + VoiceAfrica (7 train / 3 held-out speakers per language), checkpoints at 4k and 8k steps | **done** | **predicted final 0.621** at 8k steps (4k: 0.585). Cross-fit offsets ×0.75 add about +0.02 F1. See `results/cv_r5b/` |
 | Final (D4) | Best recipe on all data (cleaned competition data + ext + all VoiceAfrica + Wikimedia/Wikitongues), 8k steps, offsets ×0.75 | **done, packaged, public** | 94.6M, checker PASS; expected final about 0.61–0.64 (ray_nacido: 0.5685) |
+| Longer training | Same recipe, 12,000 steps | **stopped after fold A: no gain** | fold A 12k: 0.540 / 0.501 / 0.555 (clean / noisy / phone) vs 8k: 0.545 / 0.501 / 0.558. 8k stays |
+| Voice-change test | Wider speed/pitch shifts (0.85–1.15, 70% of clips) + feature masking, 8k steps, 3 folds | **running** (`dsn2026-cv-spkaug`, done ≈ 03:00 UTC) | Why: the model scores 0.8–1.0 on new VoiceAfrica speakers but 0.1–0.2 on a new competition-data speaker of igl/efi/ibb. It memorises the 2–5 voices it has. If this lifts held-out efi/ibb/igl, it goes into D5 |
 | 4 | External data marked USE in the report | queued | – |
 | 5 | Voice conversion / MMS-LID teacher | queued | – |
 | 6 | Depth 6 → 8 layers | queued | – |
