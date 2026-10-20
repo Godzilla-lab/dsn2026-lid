@@ -91,6 +91,7 @@ folds["sgroup"] = np.where(folds.source == "afrispeech_ipa", folds.id, folds.gro
 loc = np.array([where[i] for i in folds.id])  # shard, start, length per row of folds
 lens = loc[:, 2]
 Y = np.array([L2I[l] for l in folds.label])
+EVAL_ONLY = folds.fold.values == "V"  # evaluation-only external clips: never used for training
 log(n_clips=len(folds), audio_hours=round(lens.sum() / SR / 3600, 2), decode_s=round(time.time() - t0, 1))
 
 
@@ -333,15 +334,21 @@ def condition_logits(model, idx):
 if CONFIG["mode"] == "cv":
     rng = np.random.default_rng(CONFIG["seed"])
     for f in CONFIG["folds"]:
-        tr = np.where(folds.fold.values != f)[0]
+        tr = np.where((folds.fold.values != f) & ~EVAL_ONLY)[0]
         ho_all = np.where(folds.fold.values == f)[0]
         # evaluation subset: up to eval_per_class held-out clips per class (competition clips only)
         ho = np.concatenate([rng.permutation(ho_all[Y[ho_all] == c])[:CONFIG["eval_per_class"]] for c in range(len(LABELS))]).astype(int)
 
-        def on_eval(model, step, f=f, ho=ho):
+        va_all = np.where(EVAL_ONLY)[0]
+        va = np.concatenate([rng.permutation(va_all[Y[va_all] == c])[:CONFIG["eval_per_class"] // 2] for c in range(len(LABELS))]).astype(int)
+
+        def on_eval(model, step, f=f, ho=ho, va=va):
             t1 = time.time()
             lg = condition_logits(model, ho)
             np.savez_compressed(f"{OUT}/oof_{f}_s{step}.npz", ids=folds.id.values[ho], **lg)
+            if len(va):
+                lv = condition_logits(model, va)
+                np.savez_compressed(f"{OUT}/va_{f}_s{step}.npz", ids=folds.id.values[va], **lv)
             res = {}
             for c, l in lg.items():
                 wf1, _ = weighted_f1(folds.label.values[ho].tolist(), [LABELS[i] for i in l.argmax(1)])
@@ -353,7 +360,7 @@ if CONFIG["mode"] == "cv":
         del model
         torch.cuda.empty_cache()
 else:
-    model, train_s = train(np.arange(len(folds)), CONFIG["seed"])
+    model, train_s = train(np.where(~EVAL_ONLY)[0], CONFIG["seed"])
     log(full_train_s=train_s)
     model_dir = f"{OUT}/model"
     model.half().save_pretrained(model_dir, safe_serialization=True)

@@ -47,6 +47,8 @@ def main():
     ap.add_argument("--offsets")
     ap.add_argument("--boot", type=int, default=300)
     ap.add_argument("--json")
+    ap.add_argument("--va", nargs="*", default=[], help="evaluation-only VoiceAfrica files (va_<fold>_s<step>.npz)")
+    ap.add_argument("--va-classes", default="nup", help="classes whose pool is filled from --va (default: nup only)")
     a = ap.parse_args()
 
     labels = pd.read_csv(a.folds).set_index("id")["label"]
@@ -56,6 +58,13 @@ def main():
         ids.extend(z["ids"].tolist())
         for c in CONDITIONS:
             L[c].append(z[c])
+    va_classes = set(a.va_classes.split(","))
+    for f in a.va:  # add held-out VoiceAfrica speakers for the chosen classes (e.g. nup, which has no CV speaker)
+        z = np.load(f, allow_pickle=True)
+        keep = np.array([labels.loc[i] in va_classes for i in z["ids"]])
+        ids.extend(z["ids"][keep].tolist())
+        for c in CONDITIONS:
+            L[c].append(z[c][keep])
     L = {c: np.concatenate(v) for c, v in L.items()}
     y = np.array([LABELS.index(l) for l in labels.loc[ids]])
     off = np.zeros(len(LABELS))
