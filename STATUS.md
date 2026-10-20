@@ -40,10 +40,13 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 
 ## Submissions
 
+**Upload next: D4** (`submissions/D4/submission.zip`, repo public). If the organisers' runner is still stuck, it may time out like D2.
+
 | Name | HF repo (private until upload) | Rung | Question it tests | Local CV final | Ready? | Uploaded? |
 |---|---|---|---|---|---|---|
 | D1 | [godzilla1215/dsn2026-lid-d1](https://huggingface.co/godzilla1215/dsn2026-lid-d1) @ `a9cbed5f` | 1 | Does local CV match the leaderboard? What latency and memory do the organisers measure? | – | yes | **yes: 0.3421** |
 | D2 | [godzilla1215/dsn2026-lid-d2](https://huggingface.co/godzilla1215/dsn2026-lid-d2) @ `3e073891` | 3 | Does augmentation fix noisy/phone accuracy and the Idoma dump? | – | yes | uploaded, **not scored** (platform timeout) |
+| D4 | [godzilla1215/dsn2026-lid-d4](https://huggingface.co/godzilla1215/dsn2026-lid-d4) @ `a653142c` | final | everything + cleaned labels + offsets ×0.75 | CV recipe predicted 0.621 before offsets (+≈0.02 F1 with them) | **yes** (public, checker PASS) | sent |
 | D3 | [godzilla1215/dsn2026-lid-d3](https://huggingface.co/godzilla1215/dsn2026-lid-d3) @ `41db455c` | 3+4+6 | 12 layers + augmentation + 33 h external data. Real check of the new recipe; uses today's last slot | CV fold A (with VoiceAfrica): held-out F1 0.54 clean / 0.52 noisy / 0.57 phone (D1 recipe: 0.40 / 0.17 / 0.12) | **yes** (public, checker PASS) | sent to team lead |
 
 ## Ladder
@@ -57,7 +60,7 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 | 3+4+6 | **Go-for-#1 stack**: 12 layers + augmentation + external data (USE sources, capped at half of a class) | full model done (48 min); packaged as D3, held | 94.6M, 0.189 GB, checker PASS |
 | Calibration | CV of D1's recipe with clean/noisy/phone held-out scoring + eval-only VoiceAfrica | **done** | predicted 0.307 vs real 0.342: slightly cautious, good for ranking (`results/calibration/`) |
 | D3-recipe CV | 12 layers + aug + ext + VoiceAfrica (7 train / 3 held-out speakers per language), checkpoints at 4k and 8k steps | **done** | **predicted final 0.621** at 8k steps (4k: 0.585). Cross-fit offsets ×0.75 add about +0.02 F1. See `results/cv_r5b/` |
-| Final (D4) | Best recipe on all data (cleaned competition data + ext + all VoiceAfrica + Wikimedia/Wikitongues), 8k steps, offsets ×0.75 | **training** (started 20:04 UTC) | expected final about 0.61–0.64 (ray_nacido: 0.5685) |
+| Final (D4) | Best recipe on all data (cleaned competition data + ext + all VoiceAfrica + Wikimedia/Wikitongues), 8k steps, offsets ×0.75 | **done, packaged, public** | 94.6M, checker PASS; expected final about 0.61–0.64 (ray_nacido: 0.5685) |
 | 4 | External data marked USE in the report | queued | – |
 | 5 | Voice conversion / MMS-LID teacher | queued | – |
 | 6 | Depth 6 → 8 layers | queued | – |
