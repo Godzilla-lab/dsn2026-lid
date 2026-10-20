@@ -117,9 +117,80 @@ def sampling_weights(idx):
     return w / w.sum()
 
 
-# ---------- augmentation (rung 3) ----------
-def augment(x):
-    return x  # filled in at rung 3
+# ---------- augmentation (rung 3): applied to every class alike ----------
+# Erases the per-corpus fingerprints (digital silence, noise floor, spectrum) and adds the test
+# conditions the training data lacks (phone band and codec, noise, reverb).
+from scipy.signal import butter, fftconvolve, resample_poly, sosfilt  # noqa: E402
+
+PHONE_SOS = butter(4, [300, 3400], btype="bandpass", fs=SR, output="sos")
+SPEEDS = [(10, 9), (20, 19), (20, 21), (10, 11)]  # resample ratios for speed 0.9, 0.95, 1.05, 1.1
+
+
+def fit_length(x, n):
+    if len(x) >= n:
+        s = np.random.randint(0, len(x) - n + 1)
+        return x[s:s + n]
+    return np.pad(x, (0, n - len(x)), mode="wrap")
+
+
+def rms(x):
+    return np.sqrt(np.mean(x ** 2) + 1e-12)
+
+
+def colored_noise(n):
+    white = np.random.randn(n)
+    kind = np.random.randint(3)
+    if kind == 0:
+        return white
+    spec = np.fft.rfft(white)
+    f = np.arange(len(spec)) + 1.0
+    spec /= f ** (0.5 if kind == 1 else 1.0)  # pink or brown
+    return np.fft.irfft(spec, n)
+
+
+def augment(x, babble=None):
+    n = len(x)
+    x = x.astype(np.float64)
+    if np.random.rand() < 0.5:  # speed perturbation (tempo and pitch together)
+        up, down = SPEEDS[np.random.randint(len(SPEEDS))]
+        x = fit_length(resample_poly(x, up, down), n)
+    if np.random.rand() < 0.5:  # random smooth EQ, +-6 dB over 8 bands
+        spec = np.fft.rfft(x)
+        curve = np.interp(np.linspace(0, 7, len(spec)), np.arange(8), np.random.uniform(-6, 6, 8))
+        x = np.fft.irfft(spec * 10 ** (curve / 20), n)
+    if np.random.rand() < 0.3:  # synthetic room reverb
+        rt60 = np.random.uniform(0.2, 0.8)
+        t = np.arange(int(rt60 * SR)) / SR
+        rir = np.random.randn(len(t)) * np.exp(-6.9 * t / rt60)
+        rir[0] = 1.0
+        x = fftconvolve(x, rir / np.sqrt(np.sum(rir ** 2)))[:n]
+    if np.random.rand() < 0.5:  # background noise or babble
+        if babble is not None and np.random.rand() < 0.3:
+            noise, snr = fit_length(babble.astype(np.float64), n), np.random.uniform(10, 25)
+        else:
+            noise, snr = colored_noise(n), np.random.uniform(0, 20)
+        x = x + noise * rms(x) / rms(noise) / 10 ** (snr / 20)
+    if np.random.rand() < 0.25:  # phone channel: 300-3400 Hz, 8 kHz, mu-law 8-bit
+        x = sosfilt(PHONE_SOS, x)
+        x = resample_poly(resample_poly(x, 1, 2), 2, 1)[:n]
+        peak = np.max(np.abs(x)) + 1e-9
+        mu = np.sign(x / peak) * np.log1p(255 * np.abs(x / peak)) / np.log(256)
+        mu = np.round(mu * 127) / 127
+        x = peak * np.sign(mu) * ((256 ** np.abs(mu)) - 1) / 255
+    # always: a random noise floor, so exact digital zeros never survive
+    x = x + np.random.randn(n) * 10 ** (np.random.uniform(-75, -45) / 20)
+    return x.astype(np.float32)
+
+
+def make_batch(task):
+    """One training batch: (clip indices, start offsets, crop length, babble indices, seed)."""
+    ks, starts, n, babble_ks, seed = task
+    np.random.seed(seed)
+    out = []
+    for k, s, bk in zip(ks, starts, babble_ks):
+        x = wave(k, s, n)
+        out.append(augment(x, wave(bk)) if CONFIG["aug"] else x)
+    return out
 
 
 # ---------- model ----------
@@ -154,10 +225,16 @@ def train(train_idx, seed):
     log_prior = torch.tensor(np.log(np.maximum(prior, 1e-8)), dtype=torch.float32, device=dev)
     model.train()
     t0 = time.time()
+    tasks = []
     for step in range(CONFIG["steps"]):
         b = draws[step * CONFIG["batch"]:(step + 1) * CONFIG["batch"]]
         n = int(min(random.uniform(CONFIG["crop_min_s"], CONFIG["crop_max_s"]) * SR, lens[b].min()))
-        batch = [augment(wave(k, random.randint(0, lens[k] - n), n)) if CONFIG["aug"] else wave(k, random.randint(0, lens[k] - n), n) for k in b]
+        starts = [random.randint(0, lens[k] - n) for k in b]
+        tasks.append((b, starts, n, np.random.choice(train_idx, len(b)), seed * 100003 + step))
+    pool = Pool(3) if CONFIG["aug"] else None
+    batches = pool.imap(make_batch, tasks, chunksize=4) if pool else map(make_batch, tasks)
+    for step, (task, batch) in enumerate(zip(tasks, batches)):
+        b = task[0]
         y = torch.tensor(Y[b], device=dev)
         with torch.autocast("cuda", dtype=torch.float16):
             logits = model(inputs(batch)).logits.float()
@@ -171,6 +248,8 @@ def train(train_idx, seed):
         sched.step()
         if (step + 1) % 250 == 0:
             print(f"step {step + 1}/{CONFIG['steps']} loss {loss.item():.3f} {time.time() - t0:.0f}s", flush=True)
+    if pool:
+        pool.close()
     return model, round(time.time() - t0, 1)
 
 
