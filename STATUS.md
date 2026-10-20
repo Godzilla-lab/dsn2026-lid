@@ -55,7 +55,9 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 | 2 | Logit-adjusted loss + per-class bias tuning | queued | – |
 | 3 | Shortcut removal + phone/noise/reverb augmentation, 8,000 steps | **done: D2** (29 min train) | checker PASS; upload to see the noisy/phone effect |
 | 3+4+6 | **Go-for-#1 stack**: 12 layers + augmentation + external data (USE sources, capped at half of a class) | full model done (48 min); packaged as D3, held | 94.6M, 0.189 GB, checker PASS |
-| Calibration | CV of D1's recipe with clean/noisy/phone held-out scoring + eval-only VoiceAfrica | **running** | compare predicted vs D1's real 0.3421 |
+| Calibration | CV of D1's recipe with clean/noisy/phone held-out scoring + eval-only VoiceAfrica | **done** | predicted 0.307 vs real 0.342: slightly cautious, good for ranking (`results/calibration/`) |
+| D3-recipe CV | 12 layers + aug + ext + VoiceAfrica (7 train / 3 held-out speakers per language), checkpoints at 4k and 8k steps | **running** (until about 20:15 UTC) | predicted score, offsets, best length |
+| Final | Best recipe on all data (cleaned competition data + ext + all VoiceAfrica + Wikimedia/Wikitongues), tuned offsets | next, tonight | upload before 00:59 WAT if it is predicted best |
 | 4 | External data marked USE in the report | queued | – |
 | 5 | Voice conversion / MMS-LID teacher | queued | – |
 | 6 | Depth 6 → 8 layers | queued | – |
