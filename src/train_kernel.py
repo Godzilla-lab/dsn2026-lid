@@ -83,6 +83,7 @@ with Pool(4) as pool:
         for i, s, n in zip(ids, starts, lengths):
             where[i] = (len(SHARDS), int(s), int(n))
         SHARDS.append(audio)
+shutil.rmtree(LOCAL, ignore_errors=True)  # local copies are no longer needed once decoded
 folds = folds[folds.id.isin(where)].reset_index(drop=True)
 # Sampling groups: real speakers for hypa/omnilingual; afrispeech clips count individually,
 # so sampling is identical whichever pseudo-speaker clustering the folds use.
@@ -189,6 +190,20 @@ def augment(x, babble=None):
     return x.astype(np.float32)
 
 
+def batch_stream(tasks, pool, window=48):
+    """Yield batches in order, preparing at most two windows ahead. An unbounded imap lets the
+    workers outrun a slow GPU step and fill RAM with finished batches (D3 was OOM-killed)."""
+    if pool is None:
+        yield from map(make_batch, tasks)
+        return
+    pending = pool.map_async(make_batch, tasks[:window])
+    for s in range(0, len(tasks), window):
+        current = pending.get()
+        if s + window < len(tasks):
+            pending = pool.map_async(make_batch, tasks[s + window:s + 2 * window])
+        yield from current
+
+
 def make_batch(task):
     """One training batch: (clip indices, start offsets, crop length, babble indices, seed)."""
     ks, starts, n, babble_ks, seed = task
@@ -239,7 +254,7 @@ def train(train_idx, seed):
         starts = [random.randint(0, lens[k] - n) for k in b]
         tasks.append((b, starts, n, np.random.choice(train_idx, len(b)), seed * 100003 + step))
     pool = Pool(3) if CONFIG["aug"] else None
-    batches = pool.imap(make_batch, tasks, chunksize=4) if pool else map(make_batch, tasks)
+    batches = batch_stream(tasks, pool)
     for step, (task, batch) in enumerate(zip(tasks, batches)):
         b = task[0]
         y = torch.tensor(Y[b], device=dev)
