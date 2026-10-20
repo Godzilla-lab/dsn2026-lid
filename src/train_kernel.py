@@ -51,46 +51,58 @@ def log(**kw):
 
 # ---------- audio, decoded once into one int16 array ----------
 def decode_shard(path):
+    """Decode one shard into a single int16 array plus per-clip (id, start, length)."""
     t = pq.read_table(path, columns=["id", "audio"])
     ids, waves = t.column("id").to_pylist(), []
     for a in t.column("audio").to_pylist():
         x, sr = sf.read(io.BytesIO(a["bytes"]), dtype="int16")
         assert sr == SR and x.ndim == 1
         waves.append(x)
-    return ids, waves
+    lengths = np.array([len(w) for w in waves])
+    starts = np.concatenate([[0], np.cumsum(lengths)[:-1]])
+    return ids, starts, lengths, np.concatenate(waves)
 
 
 t0 = time.time()
 folds = pd.read_csv(f"{INPUT}/{CONFIG['folds_file']}")
+SHARDS, where = [], {}  # one int16 array per shard; id -> (shard, start, length)
 with Pool(4) as pool:
-    parts = pool.map(decode_shard, sorted(glob.glob(f"{INPUT}/*.parquet")))
-id_to_wave = {i: w for ids, ws in parts for i, w in zip(ids, ws)}
-del parts
-folds = folds[folds.id.isin(id_to_wave)].reset_index(drop=True)
-lens = np.array([len(id_to_wave[i]) for i in folds.id])
-offsets = np.concatenate([[0], np.cumsum(lens)])
-AUDIO = np.empty(offsets[-1], dtype=np.int16)
-for k, i in enumerate(folds.id):
-    AUDIO[offsets[k]:offsets[k + 1]] = id_to_wave[i]
-del id_to_wave
+    for ids, starts, lengths, audio in pool.imap(decode_shard, sorted(glob.glob(f"{INPUT}/*.parquet"))):
+        for i, s, n in zip(ids, starts, lengths):
+            where[i] = (len(SHARDS), int(s), int(n))
+        SHARDS.append(audio)
+folds = folds[folds.id.isin(where)].reset_index(drop=True)
+# Sampling groups: real speakers for hypa/omnilingual; afrispeech clips count individually,
+# so sampling is identical whichever pseudo-speaker clustering the folds use.
+folds["sgroup"] = np.where(folds.source == "afrispeech_ipa", folds.id, folds.group)
+loc = np.array([where[i] for i in folds.id])  # shard, start, length per row of folds
+lens = loc[:, 2]
 Y = np.array([L2I[l] for l in folds.label])
-log(n_clips=len(folds), audio_hours=round(offsets[-1] / SR / 3600, 2), decode_s=round(time.time() - t0, 1))
+log(n_clips=len(folds), audio_hours=round(lens.sum() / SR / 3600, 2), decode_s=round(time.time() - t0, 1))
 
 
 def wave(k, start=0, n=None):
-    a, b = offsets[k] + start, offsets[k + 1] if n is None else offsets[k] + start + n
-    return AUDIO[a:b].astype(np.float32) / 32768.0
+    sh, s, length = loc[k]
+    n = length - start if n is None else n
+    return SHARDS[sh][s + start:s + start + n].astype(np.float32) / 32768.0
 
 
-# ---------- sampling: class uniform, groups ~ size^alpha, clips uniform within group ----------
+# ---------- sampling: class uniform -> source ~ hours^0.5 -> speaker group ~ size^alpha -> clip ----------
+# The source level keeps the few hypa-channel clips of the big languages from being drowned
+# out by thousands of afrispeech clips (the test set mixes all three sources).
 def sampling_weights(idx):
-    d = folds.iloc[idx]
+    d = folds.iloc[idx].assign(n=lens[idx])
     w = np.zeros(len(idx))
+    pos = {k: j for j, k in enumerate(d.index)}
     for lab, dl in d.groupby("label"):
-        gsize = dl.groupby("group").size()
-        gw = gsize ** CONFIG["group_alpha"]
-        gw = gw / gw.sum()
-        w[d.index.get_indexer(dl.index)] = (1 / d.label.nunique()) * gw[dl.group].values / gsize[dl.group].values
+        src_w = dl.groupby("source").n.sum() ** 0.5
+        src_w = src_w / src_w.sum()
+        for src, ds in dl.groupby("source"):
+            gsize = ds.groupby("sgroup").size()
+            gw = gsize ** CONFIG["group_alpha"]
+            gw = gw / gw.sum()
+            share = (1 / d.label.nunique()) * src_w[src] * gw[ds.sgroup].values / gsize[ds.sgroup].values
+            w[[pos[k] for k in ds.index]] = share
     return w / w.sum()
 
 
