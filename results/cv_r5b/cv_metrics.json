@@ -1,0 +1,136 @@
+{
+ "config": {
+  "mode": "cv",
+  "folds": [
+   "A",
+   "B",
+   "C"
+  ],
+  "folds_file": "folds_v0_ext_va7.csv",
+  "n_layers": 12,
+  "steps": 8000,
+  "batch": 32,
+  "crop_min_s": 3.0,
+  "crop_max_s": 6.0,
+  "lr_body": 5e-05,
+  "lr_head": 0.0005,
+  "loss": "ce",
+  "tau": 0.0,
+  "group_alpha": 0.5,
+  "aug": true,
+  "ext_cap": 0.5,
+  "eval_per_class": 150,
+  "eval_at": [
+   0.5,
+   1.0
+  ],
+  "seed": 0
+ },
+ "torch": "2.11.0+cu128",
+ "gpu": "Tesla T4",
+ "copy_s": 28.1,
+ "n_shards": 20,
+ "n_clips": 44228,
+ "audio_hours": 152.71,
+ "decode_s": 176.0,
+ "fold_A_step_4000": {
+  "clean": {
+   "weighted_f1": 0.5147,
+   "acc": 0.6509
+  },
+  "noisy": {
+   "weighted_f1": 0.4803,
+   "acc": 0.6172
+  },
+  "phone": {
+   "weighted_f1": 0.5585,
+   "acc": 0.6736
+  },
+  "n_eval": 1630,
+  "eval_s": 340.4
+ },
+ "fold_A_step_8000": {
+  "clean": {
+   "weighted_f1": 0.5395,
+   "acc": 0.6859
+  },
+  "noisy": {
+   "weighted_f1": 0.5176,
+   "acc": 0.6577
+  },
+  "phone": {
+   "weighted_f1": 0.5657,
+   "acc": 0.7
+  },
+  "n_eval": 1630,
+  "eval_s": 334.8
+ },
+ "fold_A_train_s": 3469.1,
+ "fold_B_step_4000": {
+  "clean": {
+   "weighted_f1": 0.5894,
+   "acc": 0.7849
+  },
+  "noisy": {
+   "weighted_f1": 0.5599,
+   "acc": 0.7233
+  },
+  "phone": {
+   "weighted_f1": 0.6261,
+   "acc": 0.7915
+  },
+  "n_eval": 1655,
+  "eval_s": 356.3
+ },
+ "fold_B_step_8000": {
+  "clean": {
+   "weighted_f1": 0.611,
+   "acc": 0.8097
+  },
+  "noisy": {
+   "weighted_f1": 0.6252,
+   "acc": 0.794
+  },
+  "phone": {
+   "weighted_f1": 0.6534,
+   "acc": 0.8248
+  },
+  "n_eval": 1655,
+  "eval_s": 369.6
+ },
+ "fold_B_train_s": 3501.1,
+ "fold_C_step_4000": {
+  "clean": {
+   "weighted_f1": 0.6324,
+   "acc": 0.7419
+  },
+  "noisy": {
+   "weighted_f1": 0.544,
+   "acc": 0.7018
+  },
+  "phone": {
+   "weighted_f1": 0.5907,
+   "acc": 0.749
+  },
+  "n_eval": 1697,
+  "eval_s": 373.1
+ },
+ "fold_C_step_8000": {
+  "clean": {
+   "weighted_f1": 0.6436,
+   "acc": 0.7507
+  },
+  "noisy": {
+   "weighted_f1": 0.5594,
+   "acc": 0.7201
+  },
+  "phone": {
+   "weighted_f1": 0.584,
+   "acc": 0.7437
+  },
+  "n_eval": 1697,
+  "eval_s": 356.2
+ },
+ "fold_C_train_s": 3600.3,
+ "done": true
+}

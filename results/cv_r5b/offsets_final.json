@@ -1,0 +1,18 @@
+{
+ "offsets": {
+  "yor": -2.1256,
+  "ibo": -2.1959,
+  "hau": -0.3912,
+  "ego": -0.2974,
+  "anw": -2.4772,
+  "efi": 3.4525,
+  "ibb": 2.9838,
+  "idu": 0.6869,
+  "igl": 2.1401,
+  "nup": 0.0,
+  "tiv": 0.6401,
+  "urh": -0.2974,
+  "other": 0.4291
+ },
+ "note": "0.75 x offsets tuned on all CV out-of-fold logits (step 8000) under the public-test class and condition mix; nup forced to 0 (its only held-out speakers are VoiceAfrica, a different domain). Cross-fit check: held-out weighted F1 0.6956 -> 0.7171 at x0.75."
+}

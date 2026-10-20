@@ -39,6 +39,52 @@ def f1_per_class(y, p):
     return np.where(2 * tp + fp + fn > 0, 2 * tp / np.maximum(2 * tp + fp + fn, 1), 0.0), cm
 
 
+def tune_offsets(L, y, present, draws=40, sweeps=4, span=3.0, seed=1):
+    """Coordinate ascent on per-class logit offsets, maximising the mean weighted F1 over fixed
+    bootstrap draws of a test-like set (public-test class counts and condition mix)."""
+    rng = np.random.default_rng(seed)
+    conds = list(CONDITIONS)
+    probs = np.array([CONDITIONS[c] for c in conds])
+    sets = []
+    for _ in range(draws):
+        lg, yy = [], []
+        for i in np.where(present)[0]:
+            idx = np.where(y == i)[0]
+            n = TEST_COUNTS[LABELS[i]]
+            pick, cond = rng.choice(idx, n, replace=True), rng.choice(len(conds), n, p=probs)
+            lg.append(np.stack([L[conds[c]][k] for k, c in zip(pick, cond)]))
+            yy.append(np.full(n, i))
+        sets.append((np.concatenate(lg), np.concatenate(yy)))
+
+    def objective(off):
+        tot = 0.0
+        for lg, yy in sets:
+            f1, _ = f1_per_class(yy, (lg + off).argmax(1))
+            tot += (W[present] * f1[present]).sum() / W[present].sum()
+        return tot / len(sets)
+
+    off = np.zeros(len(LABELS))
+    best = objective(off)
+    print(f"tuning: mean weighted F1 before {best:.4f}")
+    grid = np.linspace(-span, span, 25)
+    for sweep in range(sweeps):
+        improved = False
+        for c in range(len(LABELS)):
+            cand = off.copy()
+            scores = []
+            for g in grid:
+                cand[c] = off[c] + g * 0.5 ** sweep
+                scores.append(objective(cand))
+            j = int(np.argmax(scores))
+            if scores[j] > best + 1e-5:
+                off[c] += grid[j] * 0.5 ** sweep
+                best, improved = scores[j], True
+        print(f"  sweep {sweep}: {best:.4f}")
+        if not improved:
+            break
+    return off - off.mean()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("folds")
@@ -49,6 +95,7 @@ def main():
     ap.add_argument("--json")
     ap.add_argument("--va", nargs="*", default=[], help="evaluation-only VoiceAfrica files (va_<fold>_s<step>.npz)")
     ap.add_argument("--va-classes", default="nup", help="classes whose pool is filled from --va (default: nup only)")
+    ap.add_argument("--tune-out", help="tune per-class offsets for the test mix and write them here (JSON)")
     a = ap.parse_args()
 
     labels = pd.read_csv(a.folds).set_index("id")["label"]
@@ -71,9 +118,14 @@ def main():
     if a.offsets:
         o = json.loads(Path(a.offsets).read_text())["offsets"]
         off = np.array([o[c] for c in LABELS])
+    present = np.array([np.any(y == i) for i in range(len(LABELS))])
+    if a.tune_out:
+        off = tune_offsets(L, y, present)
+        Path(a.tune_out).write_text(json.dumps({"offsets": dict(zip(LABELS, off.round(4).tolist())),
+                                                "note": "tuned on CV out-of-fold logits under the public-test class and condition mix"}, indent=1))
+        print("tuned offsets:", json.dumps(dict(zip(LABELS, off.round(2).tolist()))))
     pred = {c: (L[c] + off).argmax(1) for c in CONDITIONS}
 
-    present = np.array([np.any(y == i) for i in range(len(LABELS))])
     rng = np.random.default_rng(0)
     conds = list(CONDITIONS)
     probs = np.array([CONDITIONS[c] for c in conds])

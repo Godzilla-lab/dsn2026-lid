@@ -1,0 +1,18 @@
+{
+ "offsets": {
+  "yor": -2.8341,
+  "ibo": -2.9279,
+  "hau": -0.5216,
+  "ego": -0.3966,
+  "anw": -3.3029,
+  "efi": 4.6034,
+  "ibb": 3.9784,
+  "idu": 0.9159,
+  "igl": 2.8534,
+  "nup": -3.3966,
+  "tiv": 0.8534,
+  "urh": -0.3966,
+  "other": 0.5721
+ },
+ "note": "tuned on CV out-of-fold logits under the public-test class and condition mix"
+}
