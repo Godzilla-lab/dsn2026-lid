@@ -1,0 +1,87 @@
+{
+ "config": {
+  "mode": "cv",
+  "folds": [
+   "A",
+   "B",
+   "C"
+  ],
+  "folds_file": "folds_v0_va.csv",
+  "n_layers": 4,
+  "steps": 4000,
+  "batch": 32,
+  "crop_min_s": 3.0,
+  "crop_max_s": 6.0,
+  "lr_body": 5e-05,
+  "lr_head": 0.0005,
+  "loss": "ce",
+  "tau": 0.0,
+  "group_alpha": 0.5,
+  "aug": false,
+  "ext_cap": 0.5,
+  "eval_per_class": 200,
+  "eval_at": [
+   1.0
+  ],
+  "seed": 0
+ },
+ "torch": "2.11.0+cu128",
+ "gpu": "Tesla T4",
+ "copy_s": 22.7,
+ "n_shards": 15,
+ "n_clips": 32565,
+ "audio_hours": 119.57,
+ "decode_s": 138.9,
+ "fold_A_step_4000": {
+  "clean": {
+   "weighted_f1": 0.3974,
+   "acc": 0.5062
+  },
+  "noisy": {
+   "weighted_f1": 0.1654,
+   "acc": 0.1957
+  },
+  "phone": {
+   "weighted_f1": 0.1192,
+   "acc": 0.1803
+  },
+  "n_eval": 2080,
+  "eval_s": 405.6
+ },
+ "fold_A_train_s": 1262.3,
+ "fold_B_step_4000": {
+  "clean": {
+   "weighted_f1": 0.5274,
+   "acc": 0.7541
+  },
+  "noisy": {
+   "weighted_f1": 0.2272,
+   "acc": 0.2956
+  },
+  "phone": {
+   "weighted_f1": 0.1782,
+   "acc": 0.3007
+  },
+  "n_eval": 2155,
+  "eval_s": 439.5
+ },
+ "fold_B_train_s": 1297.2,
+ "fold_C_step_4000": {
+  "clean": {
+   "weighted_f1": 0.5856,
+   "acc": 0.7201
+  },
+  "noisy": {
+   "weighted_f1": 0.2205,
+   "acc": 0.2854
+  },
+  "phone": {
+   "weighted_f1": 0.2464,
+   "acc": 0.3277
+  },
+  "n_eval": 2197,
+  "eval_s": 442.6
+ },
+ "fold_C_train_s": 1361.1,
+ "done": true
+}
