@@ -2,6 +2,20 @@
 
 _Updated automatically as runs finish. Times are UTC; Nigeria time (WAT) = UTC+1._
 
+## Deadline we are working to
+
+**Wednesday 21 Oct, 18:00 WAT (17:00 UTC)**, the deadline the team was given. Codabench itself shows a later close: the dev phase ends Thu 00:59 WAT and a final phase runs Thu 01:00–09:00 WAT. We plan for the earlier time, so the best model must be uploaded before 18:00 WAT Wednesday.
+
+| When (WAT) | What |
+|---|---|
+| Tue ~17:30 | D1 ready (rung 1): upload it |
+| Tue ~21:30 | D2 ready (rung 2): upload it |
+| Tue before 00:59 | D3 (rung 3), if you're awake: today's slots are lost after 00:59 |
+| Wed ~09:00 | D4 ready (rung 4, extra data) |
+| Wed 12:00 | Voice notes deadline |
+| Wed ~16:00 | Final model (best recipe + voice notes) ready |
+| Wed by 17:30 | Upload the final model. Leave 30 min of margin before 18:00 |
+
 ## Upload next
 
 Nothing ready yet. The first submission (D1) comes from rung 1.
