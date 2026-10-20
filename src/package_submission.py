@@ -68,18 +68,34 @@ APPROACH = {
 }
 
 
-def external_section(manifest):
-    if not manifest:
+def external_section(manifests):
+    if not manifests:
         return "- No external data."
-    rows = list(csv.DictReader(open(manifest)))
-    seen, lines = set(), ["", "External datasets (openly licensed; per-dataset licence shown):", ""]
-    for r in rows:
-        key = (r["dataset_id"], r["config_split"])
-        if key in seen:
-            continue
-        seen.add(key)
-        lines.append(f"- [{r['dataset_id']}]({r['url']}), {r['config_split']}, revision {r['revision'][:10]}, "
-                     f"{r['license']}, used as `{r['label']}`")
+    lines = ["", "External datasets (openly licensed; per-dataset licence shown):", ""]
+    seen = set()
+    for manifest in manifests:
+        rows = list(csv.DictReader(open(manifest)))
+        if rows and "dataset_id" in rows[0]:  # one row per dataset / config / label
+            for r in rows:
+                key = (r["dataset_id"], r["config_split"])
+                if key in seen:
+                    continue
+                seen.add(key)
+                lines.append(f"- [{r['dataset_id']}]({r['url']}), {r['config_split']}, revision {r['revision'][:10]}, "
+                             f"{r['license']}, used as `{r['label']}`")
+        else:  # one row per media file (Wikimedia Commons, Wikitongues, Bloom Library)
+            by_source = {}
+            for r in rows:
+                by_source.setdefault(r["source"], []).append(r)
+            names = {"ext_wikimedia": "Wikimedia Commons (Wikimedia Nigeria oral-history project)",
+                     "ext_wikitongues": "Wikitongues (via Wikimedia Commons)", "ext_bloom": "Bloom Library talking books"}
+            for src, rs in by_source.items():
+                lic = sorted({r["licence"] for r in rs})
+                lines.append(f"- {names.get(src, src)}: {len(rs)} recordings ({', '.join(lic)}); speech segments only, "
+                             f"English and music removed:")
+                for r in rs:
+                    lines.append(f"  - [{r['title']}]({r['file_page']}), {r['licence']}, by {r['author'] or r['uploader']}, "
+                                 f"used as `{r['label']}`")
     return "\n".join(lines)
 
 
@@ -89,7 +105,7 @@ def main():
     ap.add_argument("hf_repo")
     ap.add_argument("out_dir")
     ap.add_argument("rung", type=int)
-    ap.add_argument("--ext-manifest")
+    ap.add_argument("--ext-manifest", nargs="*", default=[])
     ap.add_argument("--approach")
     a = ap.parse_args()
 
