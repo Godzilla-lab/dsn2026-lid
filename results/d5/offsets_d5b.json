@@ -1,0 +1,18 @@
+{
+ "offsets": {
+  "yor": -0.8,
+  "ibo": -2.1959,
+  "hau": -0.3912,
+  "ego": -0.2974,
+  "anw": -2.4772,
+  "efi": 2.6,
+  "ibb": 2.2,
+  "idu": 0.3,
+  "igl": 2.1401,
+  "nup": 0.4,
+  "tiv": 1.1,
+  "urh": -0.2974,
+  "other": 0.4291
+ },
+ "note": "offsets_final.json corrected after D5's public-leaderboard confusion matrix (Wed 21 Oct): yor was over-suppressed (precision 0.995, recall 0.60), efi/ibb over-boosted (precision 0.20/0.04, stealing Tiv and other), tiv recall 0.41; nup slightly raised. Checked on held-out CV logits: local score unchanged within noise."
+}
