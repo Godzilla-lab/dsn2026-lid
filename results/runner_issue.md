@@ -44,6 +44,10 @@ The Codabench side is a thin client.
 - **If the probe is scored** (F1 near 0, by design): the runner works but is now too slow for real models, and the organisers need to restore the GPU.
 - **If the probe also shows 0 of 6,659:** the runner is hung. Only the organisers can restart it.
 
+## Resolution (Wed 21 Oct, 10:00–11:35 UTC)
+
+The runner recovered around 10:00 UTC: simple0001 (164.5M, 0.025 s/clip), oladahmad (94.6M, 0.014 s/clip), idowuadamo (202M), mustyyyy (20.2M, 0.004 s/clip) and team_lgorithm (94.6M) were all scored. Our probe (36k parameters) was scored at **0.003 s per clip with 1.43 GB peak memory**: a GPU runner with a fixed memory floor. The organisers' "capped on purpose" refers to the 1,800 s limit, not to CPU-only inference. D5 sent for upload.
+
 ## What only the organisers can do
 
 Restart or replace the stuck GPU worker, and confirm the evaluation hardware and test size. Then re-run the affected submissions (D2 #1005591, D4).
