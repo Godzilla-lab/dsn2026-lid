@@ -42,7 +42,7 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 
 **Team upload (HF pull request #1, adenike123):** 4 Urhobo WhatsApp recordings, 62 min. D4 already labels all 377 ten-second windows as Urhobo, so training on them would not change the model; they stay a test set. Not used for training (no consent line yet).
 
-**Final pick: D4** (`submissions/D4/submission.zip`, repo public), unless the team's Common Voice Ibibio / Nupe files arrive by **13:00 UTC (14:00 WAT)**, which leaves time to retrain as D5. Neither longer training nor stronger voice changes beat D4's recipe in CV.
+**Final pick: D5** (`submissions/D5/submission.zip`). It beats D4's single-model equivalent by +0.018 on held-out fold A. Its repo stays private until upload: say "submit D5" and Claude makes it public, or do it in the repo's Settings. **Upload it only once the organisers' runner works again** (see `results/runner_issue.md`). Neither longer training nor stronger voice changes beat D4's recipe in CV.
 
 **Organisers' runner (Wed 06:00 UTC):** no submission from any team has scored since Tue 13:15 UTC. Ten teams now show 0.0 (timeouts), us included. Ask the organisers to fix the worker and re-run the stuck submissions.
 
@@ -52,7 +52,7 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 | D2 | [godzilla1215/dsn2026-lid-d2](https://huggingface.co/godzilla1215/dsn2026-lid-d2) @ `3e073891` | 3 | Does augmentation fix noisy/phone accuracy and the Idoma dump? | – | yes | uploaded, **not scored** (platform timeout) |
 | D4 | [godzilla1215/dsn2026-lid-d4](https://huggingface.co/godzilla1215/dsn2026-lid-d4) @ `a653142c` | final | everything + cleaned labels + offsets ×0.75 | CV recipe predicted 0.621 before offsets (+≈0.02 F1 with them) | **yes** (public, checker PASS) | uploaded Wed, **not scored** (platform timeout, 0 of 6659 clips) |
 | D3 | [godzilla1215/dsn2026-lid-d3](https://huggingface.co/godzilla1215/dsn2026-lid-d3) @ `41db455c` | 3+4+6 | 12 layers + augmentation + 33 h external data. Real check of the new recipe; uses today's last slot | CV fold A (with VoiceAfrica): held-out F1 0.54 clean / 0.52 noisy / 0.57 phone (D1 recipe: 0.40 / 0.17 / 0.12) | **yes** (public, checker PASS) | sent to team lead |
-| D5 | godzilla1215/dsn2026-lid-d5 (not created yet) | final + averaging | D4 weight-averaged with a second D4 trained on the same data in a different order (one ordinary model, same size and speed). **Ships only if the average beats both single models on held-out fold A** | running (`dsn2026-d5-soup`, ≈09:30 UTC) | no | – |
+| D5 | [godzilla1215/dsn2026-lid-d5](https://huggingface.co/godzilla1215/dsn2026-lid-d5) @ `e3390666` | final + averaging | D4 weight-averaged with a second D4 trained on the same data in a different order (one ordinary model, same size and speed) + D4's offsets | fold A: **0.5646** vs 0.5465 for D4's single-model equivalent (and 0.5640 for the other seed). See `results/d5/` | **yes** (private until upload, checker PASS on the downloaded copy) | – |
 
 ## Ladder
 
