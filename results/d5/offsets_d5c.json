@@ -1,0 +1,18 @@
+{
+ "offsets": {
+  "yor": -0.3,
+  "ibo": -2.1959,
+  "hau": -0.3912,
+  "ego": -0.2974,
+  "anw": -2.4772,
+  "efi": 2.3,
+  "ibb": 2.2,
+  "idu": 0.1,
+  "igl": 1.8,
+  "nup": 0.4,
+  "tiv": 1.4,
+  "urh": -0.2974,
+  "other": 0.4291
+ },
+ "note": "second correction after D5b's public confusion matrix: yor still under-predicted (precision 0.98, recall 0.68), igl a dump for yor/other (78 false alarms), tiv loses 42 clips to other, efi still 59 false alarms, idu precision 0.74 with recall 1.0. Local CV unchanged within noise."
+}
