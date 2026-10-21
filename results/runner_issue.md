@@ -6,7 +6,7 @@
 |---|---|
 | Tue 11:46 | datapsalm scored (0.5109) |
 | Tue 13:15 | ray_nacido scored (0.5685): the last non-zero score from any other team |
-| Tue 13:22 | **D1** (#1005460) runs at **0.004 s per clip** and is scored: 0.3421 on **2,358** clips. Its status then stays "Running" with 0.0000 for 1.5 h+ after the results exist |
+| Tue 13:22 | **D1** (#1005460) runs at **0.004 s per clip** and is scored: 0.3421 (2,358 public clips scored out of the 6,659 run). Its status then stays "Running" with 0.0000 for 1.5 h+ after the results exist |
 | Tue 14:23 | **D2** (#1005591): "running inference" for 1,842 s, **0 of 6,659** clips, killed at 1,800 s, `predictions.csv is missing` |
 | Tue 14:23 → Wed | At least 10 teams submit; every one shows 0.0. No non-zero score anywhere |
 | Wed ~06:00 | **D4**: same failure, 0 of 6,659 clips in 1,800 s |
@@ -20,7 +20,7 @@
 
 ## What changed on the organisers' side
 
-1. **The clip count changed** from 2,358 (D1) to 6,659 (every run since). The evaluation setup was changed between D1 and D2. 6,659 is probably public plus private, ahead of the final phase.
+1. **Correction: the clip count did not change.** D2's own scoring output says "clips scored: 2358" too. The runner always runs all 6,659 test clips (public + private) and the public leaderboard scores 2,358 of them.
 2. **D1's job never closed.** It stayed "Running" after its results were produced, so the worker probably stalled at the end of D1's job and may still hold the GPU.
 3. **If the runner fell back to a CPU, every HuBERT-type model would fail exactly like this.** Measured on a 4-core CPU, with clips drawn from the competition's length distribution (mean 11.4 s):
 
@@ -30,6 +30,19 @@
    | D4 (12 layers) | 1.18 s | 131 min | 47 min |
 
    The limit is 30 min. Most of the CPU time is HuBERT's convolutional front end, which every layer count shares. On the organisers' GPU, D1 took 0.004 s per clip.
+
+## Where inference happens
+
+The Codabench side is a thin client.
+- **Programs:** the competition's ingestion program is 2.4 KB and its scoring program 6.2 KB, run in `codalab/codalab-legacy:py39`. They are not available to participants.
+- **What they do:** they send the repo and commit to the organisers' own runner server ("Submitting ... to the runner"), poll its status (`queued`, `downloading`, `evaluating`, `done`), then score the predictions it returns.
+- **Consequence:** the audio and the GPU are on the organisers' server, so nothing in a submission can change what that server does.
+
+## Probe to tell "hung" from "slow"
+
+`submissions/PROBE/submission.zip` points to `godzilla1215/dsn2026-lid-probe`, a 36k-parameter random-weight model. It runs 6,659 clips in about 3 minutes on one CPU thread.
+- **If the probe is scored** (F1 near 0, by design): the runner works but is now too slow for real models, and the organisers need to restore the GPU.
+- **If the probe also shows 0 of 6,659:** the runner is hung. Only the organisers can restart it.
 
 ## What only the organisers can do
 
