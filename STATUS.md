@@ -40,7 +40,9 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 
 ## Submissions
 
-**Upload next: D4** (`submissions/D4/submission.zip`, repo public). If the organisers' runner is still stuck, it may time out like D2.
+**Final pick: D4** (`submissions/D4/submission.zip`, repo public), unless the team's Common Voice Ibibio / Nupe files arrive by **13:00 UTC (14:00 WAT)**, which leaves time to retrain as D5. Neither longer training nor stronger voice changes beat D4's recipe in CV.
+
+**Organisers' runner (Wed 06:00 UTC):** no submission from any team has scored since Tue 13:15 UTC. Ten teams now show 0.0 (timeouts), us included. Ask the organisers to fix the worker and re-run the stuck submissions.
 
 | Name | HF repo (private until upload) | Rung | Question it tests | Local CV final | Ready? | Uploaded? |
 |---|---|---|---|---|---|---|
@@ -62,7 +64,7 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 | D3-recipe CV | 12 layers + aug + ext + VoiceAfrica (7 train / 3 held-out speakers per language), checkpoints at 4k and 8k steps | **done** | **predicted final 0.621** at 8k steps (4k: 0.585). Cross-fit offsets ×0.75 add about +0.02 F1. See `results/cv_r5b/` |
 | Final (D4) | Best recipe on all data (cleaned competition data + ext + all VoiceAfrica + Wikimedia/Wikitongues), 8k steps, offsets ×0.75 | **done, packaged, public** | 94.6M, checker PASS; expected final about 0.61–0.64 (ray_nacido: 0.5685) |
 | Longer training | Same recipe, 12,000 steps | **stopped after fold A: no gain** | fold A 12k: 0.540 / 0.501 / 0.555 (clean / noisy / phone) vs 8k: 0.545 / 0.501 / 0.558. 8k stays |
-| Voice-change test | Wider speed/pitch shifts (0.85–1.15, 70% of clips) + feature masking, 8k steps, 3 folds | **running** (`dsn2026-cv-spkaug`, done ≈ 03:00 UTC) | Why: the model scores 0.8–1.0 on new VoiceAfrica speakers but 0.1–0.2 on a new competition-data speaker of igl/efi/ibb. It memorises the 2–5 voices it has. If this lifts held-out efi/ibb/igl, it goes into D5 |
+| Voice-change test | Wider speed/pitch shifts (0.85–1.15, 70% of clips) + feature masking, 8k steps, 3 folds | **done: no gain, not used** | predicted final 0.610 vs 0.621 for D4's recipe; efi/ibb/igl unchanged (0.17 / 0.03 / 0.15). See `results/cv_spkaug/` |
 | 4 | External data marked USE in the report | queued | – |
 | 5 | Voice conversion / MMS-LID teacher | queued | – |
 | 6 | Depth 6 → 8 layers | queued | – |
