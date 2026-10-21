@@ -1,0 +1,2 @@
+dataset_id,config_split,revision,license,label,url,clips,speakers,hours
+Common Voice cv-corpus-27.0-2026-09-17 (ibb),validated,27.0-2026-09-17,CC0-1.0,ibb,https://mozilladatacollective.com/datasets/cmu5uwjhw008znq07h4vu9kxp,1373,17,2.92
