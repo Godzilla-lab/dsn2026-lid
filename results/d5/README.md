@@ -44,3 +44,14 @@ Local estimate vs real: the local leaderboard predicted a final of about 0.64 fo
 it was slightly optimistic this time (it was cautious on D1). The big misses are tiv (0.84 predicted, 0.53 real)
 and yor (0.93 vs 0.75): the test's Tiv and Yoruba speakers are harder than our held-out ones. nup (0.92 vs 0.73)
 was expected to be optimistic (VoiceAfrica speakers). efi, ibb and igl came out better than predicted.
+
+## D5b: offsets corrected from the confusion matrix (12:15 UTC)
+
+Same weights, `offsets_d5b.json` (yor -2.1→-0.8, efi 3.5→2.6, ibb 3.0→2.2, idu 0.7→0.3, tiv 0.6→1.1, nup 0→0.4).
+**Final 0.6222** (D5 0.6078), weighted F1 0.6951, clean / noisy / phone 0.809 / 0.822 / 0.783.
+
+| Class | yor | ibo | hau | ego | anw | efi | ibb | idu | igl | nup | tiv | urh | other |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| D5 | 0.75 | 0.92 | 0.92 | 0.96 | 0.97 | 0.28 | 0.06 | 0.83 | 0.37 | 0.73 | 0.53 | 0.99 | 0.80 |
+| D5b | 0.80 | 0.92 | 0.93 | 0.96 | 0.97 | 0.34 | 0.08 | 0.85 | 0.35 | 0.71 | 0.61 | 0.99 | 0.82 |
+| ray_nacido (11:48) | 0.80 | 0.91 | 0.96 | 0.96 | 0.75 | 0.36 | 0.00 | 0.87 | 0.48 | 0.59 | 0.54 | 0.99 | 0.86 |
