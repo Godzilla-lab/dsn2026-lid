@@ -40,6 +40,8 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 
 ## Submissions
 
+**Team upload (HF pull request #1, adenike123):** 4 Urhobo WhatsApp recordings, 62 min. D4 already labels all 377 ten-second windows as Urhobo, so training on them would not change the model; they stay a test set. Not used for training (no consent line yet).
+
 **Final pick: D4** (`submissions/D4/submission.zip`, repo public), unless the team's Common Voice Ibibio / Nupe files arrive by **13:00 UTC (14:00 WAT)**, which leaves time to retrain as D5. Neither longer training nor stronger voice changes beat D4's recipe in CV.
 
 **Organisers' runner (Wed 06:00 UTC):** no submission from any team has scored since Tue 13:15 UTC. Ten teams now show 0.0 (timeouts), us included. Ask the organisers to fix the worker and re-run the stuck submissions.
@@ -48,7 +50,7 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 |---|---|---|---|---|---|---|
 | D1 | [godzilla1215/dsn2026-lid-d1](https://huggingface.co/godzilla1215/dsn2026-lid-d1) @ `a9cbed5f` | 1 | Does local CV match the leaderboard? What latency and memory do the organisers measure? | – | yes | **yes: 0.3421** |
 | D2 | [godzilla1215/dsn2026-lid-d2](https://huggingface.co/godzilla1215/dsn2026-lid-d2) @ `3e073891` | 3 | Does augmentation fix noisy/phone accuracy and the Idoma dump? | – | yes | uploaded, **not scored** (platform timeout) |
-| D4 | [godzilla1215/dsn2026-lid-d4](https://huggingface.co/godzilla1215/dsn2026-lid-d4) @ `a653142c` | final | everything + cleaned labels + offsets ×0.75 | CV recipe predicted 0.621 before offsets (+≈0.02 F1 with them) | **yes** (public, checker PASS) | sent |
+| D4 | [godzilla1215/dsn2026-lid-d4](https://huggingface.co/godzilla1215/dsn2026-lid-d4) @ `a653142c` | final | everything + cleaned labels + offsets ×0.75 | CV recipe predicted 0.621 before offsets (+≈0.02 F1 with them) | **yes** (public, checker PASS) | uploaded Wed, **not scored** (platform timeout, 0 of 6659 clips) |
 | D3 | [godzilla1215/dsn2026-lid-d3](https://huggingface.co/godzilla1215/dsn2026-lid-d3) @ `41db455c` | 3+4+6 | 12 layers + augmentation + 33 h external data. Real check of the new recipe; uses today's last slot | CV fold A (with VoiceAfrica): held-out F1 0.54 clean / 0.52 noisy / 0.57 phone (D1 recipe: 0.40 / 0.17 / 0.12) | **yes** (public, checker PASS) | sent to team lead |
 
 ## Ladder
