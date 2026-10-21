@@ -209,11 +209,12 @@ def batch_stream(tasks, pool, window=48):
 
 
 def make_batch(task):
-    """One training batch: (clip indices, start offsets, crop length, babble indices, seed)."""
+    """One training batch: (clip indices, start offsets, crop length(s), babble indices, seed)."""
     ks, starts, n, babble_ks, seed = task
     np.random.seed(seed)
+    ns = n if isinstance(n, list) else [n] * len(ks)
     out = []
-    for k, s, bk in zip(ks, starts, babble_ks):
+    for k, s, n, bk in zip(ks, starts, ns, babble_ks):
         x = wave(k, s, n)
         out.append(augment(x, wave(bk)) if CONFIG["aug"] else x)
     return out
@@ -249,13 +250,42 @@ def degrade(x, cond, seed):
 
 
 # ---------- model ----------
+# backbone "hubert" (AfriHuBERT, raw-audio front end) or "whisper" (a Whisper encoder on log-mel
+# features with its window cut to window_s seconds: much cheaper on CPU, and the feature
+# extractor itself truncates longer clips to the window, so inference cost is bounded).
 from transformers import AutoFeatureExtractor, HubertForSequenceClassification  # noqa: E402
+from transformers import WhisperFeatureExtractor, WhisperForAudioClassification  # noqa: E402
 
-fe = AutoFeatureExtractor.from_pretrained(BASE)
+WHISPER = CONFIG.get("backbone") == "whisper"
+if WHISPER:
+    fe = WhisperFeatureExtractor.from_pretrained(CONFIG["whisper_name"], chunk_length=CONFIG["window_s"])
+else:
+    fe = AutoFeatureExtractor.from_pretrained(BASE)
 
 
 def inputs(waves):
+    if WHISPER:
+        return fe(waves, sampling_rate=SR, return_tensors="pt", device=dev).input_features.to(dev)
     return fe(waves, sampling_rate=SR, return_tensors="pt", padding=True).input_values.to(dev)
+
+
+def make_model():
+    kw = dict(num_labels=len(LABELS), id2label=dict(enumerate(LABELS)), label2id=L2I, use_weighted_layer_sum=True)
+    if not WHISPER:
+        model = HubertForSequenceClassification.from_pretrained(
+            BASE, num_hidden_layers=CONFIG["n_layers"], **kw,
+            mask_time_prob=CONFIG.get("mask_time_prob", 0.05), mask_feature_prob=CONFIG.get("mask_feature_prob", 0.0))
+        model.freeze_feature_encoder()
+        return model
+    model = WhisperForAudioClassification.from_pretrained(CONFIG["whisper_name"], **kw)
+    enc, frames = model.encoder, int(CONFIG["window_s"] * 50)  # encoder runs at 50 positions per second
+    old = enc.embed_positions
+    new = torch.nn.Embedding(frames, old.embedding_dim)
+    new.weight.data.copy_(old.weight.data[:frames])
+    new.weight.requires_grad_(old.weight.requires_grad)
+    enc.embed_positions = new
+    enc.max_source_positions = model.config.max_source_positions = frames
+    return model
 
 
 def train(train_idx, seed, on_eval=None, init_seed=None):
@@ -264,13 +294,9 @@ def train(train_idx, seed, on_eval=None, init_seed=None):
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed if init_seed is None else init_seed)
-    model = HubertForSequenceClassification.from_pretrained(
-        BASE, num_labels=len(LABELS), id2label=dict(enumerate(LABELS)), label2id=L2I,
-        num_hidden_layers=CONFIG["n_layers"], use_weighted_layer_sum=True,
-        mask_time_prob=CONFIG.get("mask_time_prob", 0.05), mask_feature_prob=CONFIG.get("mask_feature_prob", 0.0)).to(dev)
+    model = make_model().to(dev)
     if init_seed is not None and init_seed != seed:
         torch.manual_seed(seed)
-    model.freeze_feature_encoder()
     is_head = lambda n: n.startswith(("projector", "classifier", "layer_weights"))
     params = [{"params": [p for n, p in model.named_parameters() if p.requires_grad and not is_head(n)], "lr": CONFIG["lr_body"]},
               {"params": [p for n, p in model.named_parameters() if is_head(n)], "lr": CONFIG["lr_head"]}]
@@ -289,8 +315,12 @@ def train(train_idx, seed, on_eval=None, init_seed=None):
     tasks = []
     for step in range(CONFIG["steps"]):
         b = draws[step * CONFIG["batch"]:(step + 1) * CONFIG["batch"]]
-        n = int(min(random.uniform(CONFIG["crop_min_s"], CONFIG["crop_max_s"]) * SR, lens[b].min()))
-        starts = [random.randint(0, lens[k] - n) for k in b]
+        if WHISPER:  # one crop length per clip: the feature extractor pads each to the window
+            n = [int(min(random.uniform(CONFIG["crop_min_s"], CONFIG["crop_max_s"]) * SR, lens[k])) for k in b]
+            starts = [random.randint(0, lens[k] - nk) for k, nk in zip(b, n)]
+        else:
+            n = int(min(random.uniform(CONFIG["crop_min_s"], CONFIG["crop_max_s"]) * SR, lens[b].min()))
+            starts = [random.randint(0, lens[k] - n) for k in b]
         tasks.append((b, starts, n, np.random.choice(train_idx, len(b)), seed * 100003 + step))
     pool = Pool(3) if CONFIG["aug"] else None
     batches = batch_stream(tasks, pool)
@@ -373,13 +403,13 @@ if CONFIG["mode"] == "cv":
         torch.cuda.empty_cache()
 
 
-def save_full(model, train_s):
-    log(full_train_s=train_s)
-    model_dir = f"{OUT}/model"
+def save_full(model, train_s, name="model"):
+    log(**{f"{name}_train_s": train_s})
+    model_dir = f"{OUT}/{name}"
     model.half().save_pretrained(model_dir, safe_serialization=True)
     fe.save_pretrained(model_dir)
     chk = subprocess.run([sys.executable, f"{INPUT}/check_model_folder.py", model_dir], capture_output=True, text=True)
-    log(model_files=sorted(os.listdir(model_dir)), checker=chk.stdout.strip().splitlines(), checker_ok=chk.returncode == 0)
+    log(**{f"{name}_files": sorted(os.listdir(model_dir)), f"{name}_checker": chk.stdout.strip().splitlines(), f"{name}_checker_ok": chk.returncode == 0})
     del model
     torch.cuda.empty_cache()
     # Organisers' side, in a fresh process: offline load with default dtype, per-clip
@@ -400,16 +430,32 @@ waves = [audio[offs[i]:offs[i + 1]] for i in range(len(lens))]
 fe = AutoFeatureExtractor.from_pretrained(model_dir)
 m = AutoModelForAudioClassification.from_pretrained(model_dir).to("cuda").eval()
 torch.cuda.reset_peak_memory_stats()
+def x_of(w):
+    f = fe(w, sampling_rate=16000, return_tensors="pt")
+    return f["input_features"] if "input_features" in f else f["input_values"]
 def run():
     t = time.time()
     with torch.no_grad():
         for w in waves:
-            m(fe(w, sampling_rate=16000, return_tensors="pt").input_values.to("cuda", m.dtype)).logits.argmax(-1).item()
+            m(x_of(w).to("cuda", m.dtype)).logits.argmax(-1).item()
     torch.cuda.synchronize()
     return (time.time() - t) / len(waves)
 run()
 lat = statistics.median(run() for _ in range(3))
-print("BENCH " + json.dumps({"loaded_dtype": str(m.dtype), "latency_s": round(lat, 5),
+# CPU-only runner: per-clip time on 1 and 4 threads, and the projected time for 6,659 test clips
+mc = AutoModelForAudioClassification.from_pretrained(model_dir).eval()
+cpu = {}
+for th in (1, 4):
+    torch.set_num_threads(th)
+    with torch.no_grad():
+        mc(x_of(waves[0]))
+        t = time.time()
+        for w in waves[:100]:
+            mc(x_of(w)).logits.argmax(-1).item()
+    per = (time.time() - t) / 100
+    cpu[f"cpu_{th}t_s_per_clip"] = round(per, 4)
+    cpu[f"cpu_{th}t_6659_clips_s"] = round(per * 6659)
+print("BENCH " + json.dumps({"loaded_dtype": str(m.dtype), "latency_s": round(lat, 5), **cpu,
       "gpu_peak_gb": round(torch.cuda.max_memory_reserved() / 1e9, 3),
       "ram_peak_gb": round(int([l for l in open("/proc/self/status") if l.startswith("VmHWM")][0].split()[1]) / 1e6, 3),
       "params_m": round(sum(p.numel() for p in m.parameters()) / 1e6, 2)}))
@@ -423,9 +469,9 @@ print("BENCH " + json.dumps({"loaded_dtype": str(m.dtype), "latency_s": round(la
         repo_gb = sum(os.path.getsize(f"{model_dir}/{n}") for n in os.listdir(model_dir)) / 1e9
         eff, parts = efficiency(b["params_m"], repo_gb, max(b["gpu_peak_gb"], b["ram_peak_gb"]), b["latency_s"])
         b.update(repo_gb=round(repo_gb, 4), efficiency=round(eff, 3), eff_parts={k: round(v, 3) for k, v in parts.items()})
-        log(bench=b)
+        log(**{f"{name}_bench": b})
     else:
-        log(bench_error=r.stderr[-2000:])
+        log(**{f"{name}_bench_error": r.stderr[-2000:]})
     for fn in ["bench_audio.npy", "bench_lens.npy"]:
         os.remove(f"{OUT}/{fn}")
 
@@ -437,6 +483,14 @@ def average_weights(sds):
 if CONFIG["mode"] == "full":
     model, train_s = train(np.where(~EVAL_ONLY)[0], CONFIG["seed"], init_seed=CONFIG.get("init_seed"))
     save_full(model, train_s)
+elif CONFIG["mode"] == "full_multi":  # several whisper variants in one run: [[name, window_s, lr_body, out_dir], ...]
+    for wname, win, lr, out_name in CONFIG["variants"]:
+        CONFIG.update(whisper_name=wname, window_s=win, lr_body=lr, crop_max_s=win)
+        fe = WhisperFeatureExtractor.from_pretrained(wname, chunk_length=win)
+        model, train_s = train(np.where(~EVAL_ONLY)[0], CONFIG["seed"])
+        save_full(model, train_s, out_name)
+        del model
+        torch.cuda.empty_cache()
 elif CONFIG["mode"] == "cv_soup":
     # Weight averaging check: per fold, train one model per seed in soup_seeds (shared head
     # initialisation), score each and their weight average on the held-out fold. Optionally
