@@ -53,6 +53,7 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 | D4 | [godzilla1215/dsn2026-lid-d4](https://huggingface.co/godzilla1215/dsn2026-lid-d4) @ `a653142c` | final | everything + cleaned labels + offsets ×0.75 | CV recipe predicted 0.621 before offsets (+≈0.02 F1 with them) | **yes** (public, checker PASS) | uploaded Wed, **not scored** (platform timeout, 0 of 6659 clips) |
 | D3 | [godzilla1215/dsn2026-lid-d3](https://huggingface.co/godzilla1215/dsn2026-lid-d3) @ `41db455c` | 3+4+6 | 12 layers + augmentation + 33 h external data. Real check of the new recipe; uses today's last slot | CV fold A (with VoiceAfrica): held-out F1 0.54 clean / 0.52 noisy / 0.57 phone (D1 recipe: 0.40 / 0.17 / 0.12) | **yes** (public, checker PASS) | sent to team lead |
 | D5 | [godzilla1215/dsn2026-lid-d5](https://huggingface.co/godzilla1215/dsn2026-lid-d5) @ `e3390666` | final + averaging | D4 weight-averaged with a second D4 trained on the same data in a different order (one ordinary model, same size and speed) + D4's offsets | fold A: **0.5646** vs 0.5465 for D4's single-model equivalent (and 0.5640 for the other seed). See `results/d5/` | **yes** (private until upload, checker PASS on the downloaded copy) | – |
+| D6 | godzilla1215/dsn2026-lid-d6 (not created yet) | final + 3-way averaging | D5 plus a third same-recipe model (seed 2) in the average. **Ships only if it beats D5 on held-out fold A** | training (`dsn2026-d6-seed2`, ≈11:40 UTC) | no | – |
 
 ## Ladder
 
