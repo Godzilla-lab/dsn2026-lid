@@ -1,0 +1,2 @@
+dataset_id,config_split,revision,license,label,url,clips,speakers,hours
+"Speech Data Collection for The Nupe Language (Mozilla Data Collective, 7 speakers)",all,mdc,CC-BY-NC-SA-4.0,nup,https://mozilladatacollective.com/datasets/cmihkoth10246md07dtojxehg,943,7,2.08

@@ -1,0 +1,8 @@
+new_speaker,label,clips,best_ref,best_ref_label,best_ref_source,similarity,flagged
+ext_mdc_nup_9ceaf2ec15,nup,8,va_spk246,nup,ext_voiceafrica,0.989,True
+ext_mdc_nup_baba0372e7,nup,8,va_spk242,nup,ext_voiceafrica,0.975,True
+ext_mdc_nup_31173cb8b3,nup,8,va_spk246,nup,ext_voiceafrica,0.971,False
+ext_mdc_nup_3001247f6d,nup,8,va_spk247,nup,ext_voiceafrica,0.964,False
+ext_mdc_nup_65ed57bf61,nup,8,va_spk246,nup,ext_voiceafrica,0.963,False
+ext_mdc_nup_d2bcd40993,nup,8,va_spk247,nup,ext_voiceafrica,0.953,False
+ext_mdc_nup_e9ccb9b959,nup,8,va_spk248,nup,ext_voiceafrica,0.919,False
