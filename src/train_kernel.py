@@ -454,8 +454,9 @@ elif CONFIG["mode"] == "cv_soup":
             if len(sds) < len(CONFIG["soup_seeds"]):
                 del model
                 torch.cuda.empty_cache()
-        model.load_state_dict(average_weights(sds))
-        evaluate(model, f, "soup", ho, va)
+        if len(sds) > 1:
+            model.load_state_dict(average_weights(sds))
+            evaluate(model, f, "soup", ho, va)
         del model, sds
         torch.cuda.empty_cache()
     if CONFIG.get("full_seed") is not None:  # all rows, V included: the same training set as folds_final
