@@ -1,0 +1,65 @@
+{
+ "config": {
+  "mode": "full",
+  "folds": [
+   "A",
+   "B",
+   "C"
+  ],
+  "folds_file": "folds_final3.csv",
+  "n_layers": 12,
+  "steps": 8000,
+  "batch": 32,
+  "crop_min_s": 3.0,
+  "crop_max_s": 6.0,
+  "lr_body": 5e-05,
+  "lr_head": 0.0005,
+  "loss": "ce",
+  "tau": 0.0,
+  "group_alpha": 0.5,
+  "aug": true,
+  "ext_cap": 0.5,
+  "eval_per_class": 200,
+  "eval_at": [
+   1.0
+  ],
+  "seed": 0
+ },
+ "torch": "2.11.0+cu128",
+ "gpu": "Tesla T4",
+ "copy_s": 29.1,
+ "n_shards": 23,
+ "n_clips": 46720,
+ "audio_hours": 159.02,
+ "decode_s": 182.2,
+ "model_train_s": 2858.0,
+ "model_files": [
+  "config.json",
+  "model.safetensors",
+  "preprocessor_config.json"
+ ],
+ "model_checker": [
+  "94.6M parameters, 0.189 GB, dtypes ['F16']",
+  "PASS: the folder meets the file, size, parameter and label rules"
+ ],
+ "model_checker_ok": true,
+ "model_bench": {
+  "loaded_dtype": "torch.float32",
+  "latency_s": 0.07346,
+  "cpu_1t_s_per_clip": 2.455,
+  "cpu_1t_6659_clips_s": 16348,
+  "cpu_4t_s_per_clip": 1.2768,
+  "cpu_4t_6659_clips_s": 8503,
+  "gpu_peak_gb": 1.789,
+  "ram_peak_gb": 3.519,
+  "params_m": 94.57,
+  "repo_gb": 0.1892,
+  "efficiency": 0.471,
+  "eff_parts": {
+   "size": 0.802,
+   "memory": 0.12,
+   "speed": 0.49
+  }
+ },
+ "done": true
+}
