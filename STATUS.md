@@ -46,7 +46,9 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 
 **D5b scored 0.6222 at 12:15 UTC Wed: first place** (ray_nacido 0.6026 at 11:48, D5 0.6078). F1 0.6788, efficiency 0.791, clean / noisy / phone accuracy 0.792 / 0.793 / 0.736. Weak classes on the real test: ibb 0.06, efi 0.28, igl 0.37, tiv 0.53, nup 0.73, yor 0.75. Neither longer training nor stronger voice changes beat D4's recipe in CV.
 
-**Codabench outage (Wed 14:22 UTC → at least 16:20 UTC):** the site returns HTTP 503 / connection resets for everyone, so no uploads or scores are possible. D5c and D7 are public and ready to upload the moment it returns; the final phase (Thu 00:00–08:00 UTC, 5 uploads) needs the best repo public at that time.
+**Final phase (Thu 00:00–08:00 UTC, 5 uploads, private test clips, scores shown):** upload **D7, then D5b, then D5c** as soon as Codabench works; all three repos are public for it. The best private-split score is the final pick; the others go private again afterwards.
+
+**Codabench outage (Wed 14:22 UTC → at least 23:30 UTC):** the site returns HTTP 503 / connection resets for everyone, so no uploads or scores are possible. D5c and D7 are public and ready to upload the moment it returns; the final phase (Thu 00:00–08:00 UTC, 5 uploads) needs the best repo public at that time.
 
 **Organisers' runner (Wed 11:15 UTC): working again.** simple0001 scored 0.4106 at 10:04 UTC with a 164.5M model at 0.025 s per clip (GPU speed), the first real score since Tue 13:15. Submissions at 09:04 and 09:31 still failed, so the fix landed about 10:00. **D5 made public and sent for upload.** The probe confirmed a healthy GPU runner (0.003 s per clip), so the CPU-fast Whisper backup was dropped unfinished.
 
