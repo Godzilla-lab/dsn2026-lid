@@ -258,14 +258,18 @@ def inputs(waves):
     return fe(waves, sampling_rate=SR, return_tensors="pt", padding=True).input_values.to(dev)
 
 
-def train(train_idx, seed, on_eval=None):
+def train(train_idx, seed, on_eval=None, init_seed=None):
+    """init_seed (default: seed) sets the new head's initialisation; seed sets data order, crops and
+    augmentation. Models that share init_seed can be weight-averaged (same basin, aligned heads)."""
     random.seed(seed)
     np.random.seed(seed)
-    torch.manual_seed(seed)
+    torch.manual_seed(seed if init_seed is None else init_seed)
     model = HubertForSequenceClassification.from_pretrained(
         BASE, num_labels=len(LABELS), id2label=dict(enumerate(LABELS)), label2id=L2I,
         num_hidden_layers=CONFIG["n_layers"], use_weighted_layer_sum=True,
         mask_time_prob=CONFIG.get("mask_time_prob", 0.05), mask_feature_prob=CONFIG.get("mask_feature_prob", 0.0)).to(dev)
+    if init_seed is not None and init_seed != seed:
+        torch.manual_seed(seed)
     model.freeze_feature_encoder()
     is_head = lambda n: n.startswith(("projector", "classifier", "layer_weights"))
     params = [{"params": [p for n, p in model.named_parameters() if p.requires_grad and not is_head(n)], "lr": CONFIG["lr_body"]},
@@ -335,36 +339,41 @@ def condition_logits(model, idx):
     return out
 
 
+def cv_split(f, rng):
+    tr = np.where((folds.fold.values != f) & ~EVAL_ONLY)[0]
+    ho_all = np.where(folds.fold.values == f)[0]
+    # evaluation subset: up to eval_per_class held-out clips per class (competition clips only)
+    ho = np.concatenate([rng.permutation(ho_all[Y[ho_all] == c])[:CONFIG["eval_per_class"]] for c in range(len(LABELS))]).astype(int)
+    va_all = np.where(EVAL_ONLY)[0]
+    va = np.concatenate([rng.permutation(va_all[Y[va_all] == c])[:CONFIG["eval_per_class"] // 2] for c in range(len(LABELS))]).astype(int)
+    return tr, ho, va
+
+
+def evaluate(model, f, tag, ho, va):
+    t1 = time.time()
+    lg = condition_logits(model, ho)
+    np.savez_compressed(f"{OUT}/oof_{f}_{tag}.npz", ids=folds.id.values[ho], **lg)
+    if len(va):
+        lv = condition_logits(model, va)
+        np.savez_compressed(f"{OUT}/va_{f}_{tag}.npz", ids=folds.id.values[va], **lv)
+    res = {}
+    for c, l in lg.items():
+        wf1, _ = weighted_f1(folds.label.values[ho].tolist(), [LABELS[i] for i in l.argmax(1)])
+        res[c] = {"weighted_f1": round(wf1, 4), "acc": round(float((l.argmax(1) == Y[ho]).mean()), 4)}
+    log(**{f"fold_{f}_{tag}": {**res, "n_eval": len(ho), "eval_s": round(time.time() - t1, 1)}})
+
+
 if CONFIG["mode"] == "cv":
     rng = np.random.default_rng(CONFIG["seed"])
     for f in CONFIG["folds"]:
-        tr = np.where((folds.fold.values != f) & ~EVAL_ONLY)[0]
-        ho_all = np.where(folds.fold.values == f)[0]
-        # evaluation subset: up to eval_per_class held-out clips per class (competition clips only)
-        ho = np.concatenate([rng.permutation(ho_all[Y[ho_all] == c])[:CONFIG["eval_per_class"]] for c in range(len(LABELS))]).astype(int)
-
-        va_all = np.where(EVAL_ONLY)[0]
-        va = np.concatenate([rng.permutation(va_all[Y[va_all] == c])[:CONFIG["eval_per_class"] // 2] for c in range(len(LABELS))]).astype(int)
-
-        def on_eval(model, step, f=f, ho=ho, va=va):
-            t1 = time.time()
-            lg = condition_logits(model, ho)
-            np.savez_compressed(f"{OUT}/oof_{f}_s{step}.npz", ids=folds.id.values[ho], **lg)
-            if len(va):
-                lv = condition_logits(model, va)
-                np.savez_compressed(f"{OUT}/va_{f}_s{step}.npz", ids=folds.id.values[va], **lv)
-            res = {}
-            for c, l in lg.items():
-                wf1, _ = weighted_f1(folds.label.values[ho].tolist(), [LABELS[i] for i in l.argmax(1)])
-                res[c] = {"weighted_f1": round(wf1, 4), "acc": round(float((l.argmax(1) == Y[ho]).mean()), 4)}
-            log(**{f"fold_{f}_step_{step}": {**res, "n_eval": len(ho), "eval_s": round(time.time() - t1, 1)}})
-
-        model, train_s = train(tr, CONFIG["seed"], on_eval=on_eval)
+        tr, ho, va = cv_split(f, rng)
+        model, train_s = train(tr, CONFIG["seed"], on_eval=lambda m, step, f=f, ho=ho, va=va: evaluate(m, f, f"s{step}", ho, va))
         log(**{f"fold_{f}_train_s": train_s})
         del model
         torch.cuda.empty_cache()
-else:
-    model, train_s = train(np.where(~EVAL_ONLY)[0], CONFIG["seed"])
+
+
+def save_full(model, train_s):
     log(full_train_s=train_s)
     model_dir = f"{OUT}/model"
     model.half().save_pretrained(model_dir, safe_serialization=True)
@@ -419,5 +428,38 @@ print("BENCH " + json.dumps({"loaded_dtype": str(m.dtype), "latency_s": round(la
         log(bench_error=r.stderr[-2000:])
     for fn in ["bench_audio.npy", "bench_lens.npy"]:
         os.remove(f"{OUT}/{fn}")
+
+
+def average_weights(sds):
+    return {k: (sum(sd[k] for sd in sds) / len(sds)) if sds[0][k].is_floating_point() else sds[0][k] for k in sds[0]}
+
+
+if CONFIG["mode"] == "full":
+    model, train_s = train(np.where(~EVAL_ONLY)[0], CONFIG["seed"], init_seed=CONFIG.get("init_seed"))
+    save_full(model, train_s)
+elif CONFIG["mode"] == "cv_soup":
+    # Weight averaging check: per fold, train one model per seed in soup_seeds (shared head
+    # initialisation), score each and their weight average on the held-out fold. Optionally
+    # then train the full model for one more seed, to be averaged with an existing full model.
+    rng = np.random.default_rng(CONFIG["seed"])
+    init = CONFIG.get("init_seed", 0)
+    for f in CONFIG["folds"]:
+        tr, ho, va = cv_split(f, rng)
+        sds = []
+        for s in CONFIG["soup_seeds"]:
+            model, train_s = train(tr, s, init_seed=init)
+            log(**{f"fold_{f}_seed{s}_train_s": train_s})
+            evaluate(model, f, f"seed{s}", ho, va)
+            sds.append({k: v.detach().float().cpu().clone() for k, v in model.state_dict().items()})
+            if len(sds) < len(CONFIG["soup_seeds"]):
+                del model
+                torch.cuda.empty_cache()
+        model.load_state_dict(average_weights(sds))
+        evaluate(model, f, "soup", ho, va)
+        del model, sds
+        torch.cuda.empty_cache()
+    if CONFIG.get("full_seed") is not None:  # all rows, V included: the same training set as folds_final
+        model, train_s = train(np.arange(len(folds)), CONFIG["full_seed"], init_seed=init)
+        save_full(model, train_s)
 
 log(done=True)
