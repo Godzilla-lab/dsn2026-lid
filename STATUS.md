@@ -36,6 +36,8 @@ D1 result: final 0.3421 (F1 0.374, efficiency 0.830). See `results/d1/leaderboar
 2. On Codabench, go to **Participate → Submit** and upload that row's `submission.zip` (in `submissions/<name>/`).
 3. Paste the leaderboard numbers into the chat, or tell Claude it's uploaded and it will read them.
 
+**Repo visibility policy (from Wed 12:35 UTC):** every model repo is private. A repo is made public only for the minutes the organisers' runner needs to download it, then private again once scored. It must be public again for the final-phase uploads and if the organisers ask to verify.
+
 **Submission limits:** 3 per day, and the day resets at 00:00 UTC (01:00 WAT). Today's unused slots are lost after **00:59 WAT**.
 
 ## Submissions
