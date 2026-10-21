@@ -28,3 +28,19 @@ Fold A scores sit below the 3-fold mean because fold A is the hardest fold.
 
 - Organisers' checker: PASS (94.6M parameters, 0.189 GB, fp16). The config is byte-identical to D4's.
 - **130 competition clips** (10 per class, seen in training): D5 got 128 right and D4 got 127. They agree on 129.
+
+## Real result (public leaderboard, Wed 21 Oct 11:17 UTC)
+
+**Final 0.6078, first place** (previous leader 0.5685). Weighted F1 0.6788, efficiency 0.791 (94.6M, 0.189 GB, 1.72 GB, 0.006 s).
+Accuracy clean 0.792 / noisy 0.793 / phone 0.736.
+
+| Class | yor | ibo | hau | ego | anw | efi | ibb | idu | igl | nup | tiv | urh | other |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| D5 real F1 | 0.75 | 0.92 | 0.92 | 0.96 | 0.97 | 0.28 | 0.06 | 0.83 | 0.37 | 0.73 | 0.53 | 0.99 | 0.80 |
+| Leader (ray_nacido) | 0.78 | 0.85 | 0.94 | 0.96 | 0.72 | 0.24 | 0.00 | 0.89 | 0.29 | 0.59 | 0.47 | 1.00 | 0.86 |
+| Local 3-fold estimate (D4 recipe) | 0.93 | 0.92 | 0.92 | 0.91 | 0.82 | 0.17 | 0.02 | 0.86 | 0.19 | 0.92 | 0.84 | 0.98 | 0.88 |
+
+Local estimate vs real: the local leaderboard predicted a final of about 0.64 for D4's recipe and D5 scored 0.61, so
+it was slightly optimistic this time (it was cautious on D1). The big misses are tiv (0.84 predicted, 0.53 real)
+and yor (0.93 vs 0.75): the test's Tiv and Yoruba speakers are harder than our held-out ones. nup (0.92 vs 0.73)
+was expected to be optimistic (VoiceAfrica speakers). efi, ibb and igl came out better than predicted.
