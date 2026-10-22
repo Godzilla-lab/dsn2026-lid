@@ -1,0 +1,8 @@
+{
+ "model_id": "godzilla1215/dsn2026-lid-d7",
+ "revision_id": "3d5425c9d48ad28e368af168a4fee7d27145973e",
+ "repo": "godzilla1215/dsn2026-lid-d7",
+ "revision": "3d5425c9d48ad28e368af168a4fee7d27145973e",
+ "team": "godzilla",
+ "note": "Retrained with Common Voice Ibibio and MDC Nupe; expected best"
+}
